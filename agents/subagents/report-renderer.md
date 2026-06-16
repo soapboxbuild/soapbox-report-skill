@@ -66,7 +66,43 @@ Merge any fields from memory into `data` if the calling skill did not supply the
    - Apply margin tokens from brand: `--margin-top`, `--margin-side`, `--margin-bottom`.
    - Footer style from `brand.footer_style`: `logo-left-page-right` renders the org logo bottom-left and page number bottom-right on every page.
 
-### 6. Emit Artifact
+### 6. Build XLSX Companion
+
+Before emitting the HTML artifact, generate a companion spreadsheet using `openpyxl`. This runs every render — the XLSX is always produced alongside the report, not just on export request.
+
+Install if needed: `pip install openpyxl`
+
+**Sheet structure** — read `templates/{template}/xlsx.json` if it exists; otherwise derive sheets from the table arrays in `data`:
+
+For each table array in `data` (e.g., `decarb_plan`, `emissions_profile`, `financial_projection`):
+1. Create a worksheet named after the section (max 31 chars, title-cased, spaces not underscores)
+2. Row 1: headers, bold, background fill `brand.primary_color`, white text
+3. Rows 2+: data values. Format numbers with commas, percentages as %, currency as `$#,##0`
+4. Auto-size columns (min 10, max 50 chars)
+5. Freeze row 1
+
+**Native charts** — for sections with a chart equivalent in the HTML layout, add an openpyxl chart to the sheet:
+- `financial_projection` → `LineChart` (cumulative_net over years, with zero-line reference)
+- `emissions_trajectory` → `LineChart` (baseline vs retrofit vs pathway, 3 series)
+- `retrofit_trajectory` → `LineChart` (same 3-series pattern)
+- `compliance_periods` → `BarChart` (projected emissions vs threshold per period)
+- Chart colors: series 1 = `brand.primary_color`, series 2 = `brand.highlight_color`, series 3 = `brand.text_muted`
+
+**Summary sheet** (always first):
+- One row per non-table section: section name | key metric | value
+- E.g., for RSRA: Deal Signal | Level | "Low Risk — Accretive Opportunity"
+
+Save to: `workspace/orgs/{org}/portfolios/{portfolio}/assets/{asset}/reports/{template}-{YYYY-MM-DD}.xlsx`
+
+Store the file path as `xlsx_path` for step 7.
+
+**Add sheet references to HTML tables** — for each table section in the assembled HTML, append a small footnote below the table:
+```html
+<p class="sheet-ref">↗ See supporting spreadsheet: <em>{SheetName}</em> sheet</p>
+```
+Style `.sheet-ref` as muted 7.5pt text, right-aligned, matching `var(--color-text-muted)`.
+
+### 7. Emit Artifact
 
 Output the fully assembled HTML as a Claude artifact with:
 - `type: text/html`
@@ -74,7 +110,7 @@ Output the fully assembled HTML as a Claude artifact with:
 
 The artifact must be self-contained: all CSS inline or in `<style>` blocks, no external dependencies except the Paged.js CDN and Google Fonts CDN.
 
-### 7. Hand Off
+### 8. Hand Off
 
 After emitting the artifact, immediately invoke the `report-review` workflow, passing:
 
@@ -85,7 +121,8 @@ After emitting the artifact, immediately invoke the `report-review` workflow, pa
   "portfolio": "{portfolio}",
   "asset": "{asset}",
   "data": "{merged data object}",
-  "artifact_title": "{artifact title from step 6}"
+  "artifact_title": "{artifact title from step 7}",
+  "xlsx_path": "{path from step 6}"
 }
 ```
 
