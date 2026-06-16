@@ -1,0 +1,117 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Portfolio ESG Summary",
+  "description": "Data schema for the portfolio-summary report template. Used by scope3-accounting skill for GRESB, LP, and board-level carbon summary reporting.",
+  "type": "object",
+  "required": ["portfolio", "emissions_summary", "assets", "targets", "prepared_by", "prepared_for", "report_date"],
+  "properties": {
+
+    "portfolio": {
+      "type": "object",
+      "description": "Top-level portfolio identity and composition.",
+      "required": ["name", "reporting_year"],
+      "properties": {
+        "name":             { "type": "string", "description": "Portfolio or fund display name, e.g. 'Meridian Green Core Fund III'" },
+        "fund_name":        { "type": "string", "description": "Formal legal fund name if different from portfolio.name" },
+        "vintage_year":     { "type": "integer", "description": "Fund vintage year, e.g. 2021" },
+        "total_assets":     { "type": "integer", "description": "Number of assets in the portfolio" },
+        "total_gfa_sqft":   { "type": "number",  "description": "Total gross floor area across all assets, in square feet" },
+        "total_aum_usd":    { "type": "number",  "description": "Total assets under management, in USD" },
+        "reporting_year":   { "type": "integer", "description": "Calendar year this report covers, e.g. 2024" },
+        "jurisdiction_mix": {
+          "type": "array",
+          "description": "Geographic composition of the portfolio by percentage.",
+          "items": {
+            "type": "object",
+            "required": ["country", "pct"],
+            "properties": {
+              "country": { "type": "string", "description": "Country or region name, e.g. 'United States'" },
+              "pct":     { "type": "number", "description": "Percentage of portfolio GFA in this jurisdiction, 0-100" }
+            }
+          }
+        }
+      }
+    },
+
+    "emissions_summary": {
+      "type": "object",
+      "description": "Portfolio-level Scope 1/2/3 emissions totals and coverage metadata.",
+      "required": ["total_scope1_tco2e", "total_scope2_tco2e", "portfolio_intensity_kgco2_m2yr", "data_coverage_pct", "verification_status"],
+      "properties": {
+        "total_scope1_tco2e":          { "type": "number", "description": "Total Scope 1 emissions across all assets, in tCO2e" },
+        "total_scope2_tco2e":          { "type": "number", "description": "Total Scope 2 emissions across all assets, in tCO2e (market-based preferred)" },
+        "total_scope3_tco2e":          { "type": ["number", "null"], "description": "Total Scope 3 emissions (tenant, embodied, etc.) in tCO2e. Null if not reported." },
+        "portfolio_intensity_kgco2_m2yr": { "type": "number", "description": "Portfolio-weighted carbon intensity in kgCO2e/m²/yr" },
+        "yoy_change_pct":              { "type": ["number", "null"], "description": "Year-over-year change in portfolio intensity, in percentage points (negative = improvement). Null if prior year not available." },
+        "data_coverage_pct":           { "type": "number", "minimum": 0, "maximum": 100, "description": "Percentage of portfolio GFA with measured (not estimated) energy data" },
+        "verification_status":         { "type": "string", "enum": ["assured", "unassured", "partial"], "description": "Third-party assurance status of emissions data" }
+      }
+    },
+
+    "assets": {
+      "type": "array",
+      "description": "Individual asset-level summary records. Sort order: highest emitters first (descending scope1+scope2).",
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "gfa_sqft", "location", "scope1", "scope2", "intensity_kgco2_m2yr", "crrem_status", "bps_exposure", "data_quality"],
+        "properties": {
+          "name":                  { "type": "string", "description": "Asset display name" },
+          "type":                  { "type": "string", "description": "Asset type, e.g. 'Office', 'Multifamily', 'Industrial', 'Retail'" },
+          "gfa_sqft":              { "type": "number", "description": "Gross floor area in square feet" },
+          "location":              { "type": "string", "description": "City, State or City, Country" },
+          "scope1":                { "type": "number", "description": "Scope 1 emissions for this asset in tCO2e" },
+          "scope2":                { "type": "number", "description": "Scope 2 emissions for this asset in tCO2e" },
+          "eui_kwh_m2":            { "type": ["number", "null"], "description": "Energy Use Intensity in kWh/m²/yr. Null if not available." },
+          "intensity_kgco2_m2yr":  { "type": "number", "description": "Asset-level carbon intensity in kgCO2e/m²/yr" },
+          "crrem_status":          { "type": "string", "enum": ["aligned", "at-risk", "stranded"], "description": "CRREM pathway alignment status. 'aligned' = on track; 'at-risk' = within 20% above pathway; 'stranded' = >20% above pathway." },
+          "bps_exposure":          { "type": "string", "enum": ["none", "low", "medium", "high"], "description": "Exposure to Building Performance Standards fine risk in the reporting year" },
+          "data_quality":          { "type": "integer", "minimum": 1, "maximum": 5, "description": "Data quality score 1-5. 5 = verified metered data; 1 = rough estimate only." }
+        }
+      }
+    },
+
+    "targets": {
+      "type": "object",
+      "description": "Portfolio decarbonization targets and progress tracking.",
+      "required": ["baseline_year", "baseline_intensity", "target_2030_pct_reduction", "target_2050_net_zero", "current_progress_pct"],
+      "properties": {
+        "baseline_year":             { "type": "integer", "description": "Baseline year for reduction target calculations, e.g. 2019" },
+        "baseline_intensity":        { "type": "number", "description": "Portfolio intensity in baseline year, kgCO2e/m²/yr" },
+        "target_2030_pct_reduction": { "type": "number", "minimum": 0, "maximum": 100, "description": "Target percentage reduction in intensity by 2030 vs. baseline, e.g. 50 = 50% reduction" },
+        "target_2050_net_zero":      { "type": "boolean", "description": "Whether the portfolio has a formal 2050 net-zero commitment" },
+        "current_progress_pct":      { "type": "number", "minimum": 0, "description": "Percentage of the 2030 reduction target achieved to date, e.g. 38 = 38% of the way to the 2030 target. May exceed 100 if target already met." }
+      }
+    },
+
+    "initiatives": {
+      "type": "array",
+      "description": "Portfolio-level carbon reduction initiatives (planned, in-progress, or complete).",
+      "items": {
+        "type": "object",
+        "required": ["name", "status", "assets_covered", "projected_reduction_tco2e", "capex_total_usd"],
+        "properties": {
+          "name":                       { "type": "string", "description": "Initiative name, e.g. 'LED Lighting Portfolio Rollout'" },
+          "status":                     { "type": "string", "enum": ["planned", "in-progress", "complete"], "description": "Implementation status" },
+          "assets_covered":             { "type": "integer", "description": "Number of assets this initiative applies to" },
+          "projected_reduction_tco2e":  { "type": "number", "description": "Projected annual carbon reduction when fully implemented, in tCO2e" },
+          "capex_total_usd":            { "type": "number", "description": "Total capital expenditure for this initiative across all assets, in USD" }
+        }
+      }
+    },
+
+    "gresb_context": {
+      "type": "object",
+      "description": "GRESB benchmark data. Optional — include only when a GRESB submission exists for this reporting year.",
+      "properties": {
+        "score":               { "type": "integer", "minimum": 0, "maximum": 100, "description": "GRESB overall score (0-100)" },
+        "peer_average":        { "type": "integer", "minimum": 0, "maximum": 100, "description": "Peer group average GRESB score for comparison" },
+        "green_star_rating":   { "type": "integer", "minimum": 1, "maximum": 5, "description": "GRESB Green Star rating (1-5 stars)" },
+        "data_coverage_score": { "type": "integer", "minimum": 0, "maximum": 100, "description": "GRESB data coverage component score" }
+      }
+    },
+
+    "prepared_by":   { "type": "string", "description": "Name of person, team, or tool that prepared this report, e.g. 'Audette Sustainability Intelligence'" },
+    "prepared_for":  { "type": "string", "description": "Recipient of this report, e.g. 'LP Quarterly ESG Reporting — Q4 2024'" },
+    "report_date":   { "type": "string", "format": "date", "description": "Report generation date in YYYY-MM-DD format" }
+  }
+}

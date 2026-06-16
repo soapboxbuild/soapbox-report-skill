@@ -1,0 +1,12 @@
+{
+  "name": "SW Fund I",
+  "fund_strategy": "Value-add multifamily, Sun Belt and Southeast US",
+  "vintage_year": 2021,
+  "target_irr_pct": null,
+  "portfolio_carbon_intensity_target": null,
+  "gresb_enrolled": false,
+  "lp_requirements": [],
+  "assets": [],
+  "notes": "Prose Frontier and Station at Savannah Quarters are example assets for RSRA testing.",
+  "created": "2026-06-16"
+}

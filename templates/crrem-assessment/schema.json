@@ -1,0 +1,227 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "crrem-assessment/schema.json",
+  "title": "CRREM Carbon Pathway Assessment",
+  "description": "Data schema for the CRREM Carbon Pathway Assessment report template. Used by the crrem skill and tcfd-reporting skill for carbon pathway benchmarking and climate disclosure.",
+  "type": "object",
+  "required": ["property", "performance", "pathway", "trajectory", "emission_factors", "recommendations", "prepared_by", "prepared_for", "report_date"],
+  "additionalProperties": false,
+
+  "properties": {
+
+    "property": {
+      "type": "object",
+      "description": "Physical and classification attributes of the asset.",
+      "required": ["name", "address", "type", "country", "gfa_m2", "year_built"],
+      "additionalProperties": false,
+      "properties": {
+        "name":    { "type": "string", "description": "Building or property name." },
+        "address": { "type": "string", "description": "Full street address." },
+        "type": {
+          "type": "string",
+          "description": "CRREM property type classification.",
+          "examples": ["Office", "Retail (High Street)", "Retail (Shopping Centre)", "Industrial", "Residential (Multifamily)", "Hotel", "Healthcare", "Logistics", "Data Centre"]
+        },
+        "country": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 2,
+          "description": "ISO 3166-1 alpha-2 country code (e.g. 'US', 'DE', 'GB')."
+        },
+        "gfa_m2":    { "type": "number", "minimum": 1, "description": "Gross floor area in square metres." },
+        "year_built": { "type": "integer", "minimum": 1800, "maximum": 2100, "description": "Year of original construction." }
+      }
+    },
+
+    "performance": {
+      "type": "object",
+      "description": "Measured energy and carbon performance for the most recent full year.",
+      "required": ["actual_carbon_kgco2_m2yr", "actual_eui_kwh_m2yr", "fuel_mix"],
+      "additionalProperties": false,
+      "properties": {
+        "actual_carbon_kgco2_m2yr": {
+          "type": "number",
+          "description": "Actual carbon intensity in kgCO₂/m²/yr."
+        },
+        "actual_eui_kwh_m2yr": {
+          "type": "number",
+          "description": "Actual energy use intensity in kWh/m²/yr."
+        },
+        "fuel_mix": {
+          "type": "object",
+          "description": "Percentage breakdown of energy sources (must sum to 100).",
+          "required": ["electricity_pct", "gas_pct", "other_pct"],
+          "additionalProperties": false,
+          "properties": {
+            "electricity_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+            "gas_pct":         { "type": "number", "minimum": 0, "maximum": 100 },
+            "other_pct":       { "type": "number", "minimum": 0, "maximum": 100, "description": "Covers district heat, oil, biomass, etc." }
+          }
+        }
+      }
+    },
+
+    "pathway": {
+      "type": "object",
+      "description": "CRREM decarbonization pathway targets and stranding analysis.",
+      "required": ["target_2025", "target_2030", "target_2035", "target_2040", "target_2050", "stranding_year", "current_gap_pct", "pathway_name"],
+      "additionalProperties": false,
+      "properties": {
+        "target_2025": { "type": "number", "description": "CRREM pathway target for 2025 in kgCO₂/m²/yr." },
+        "target_2030": { "type": "number", "description": "CRREM pathway target for 2030 in kgCO₂/m²/yr." },
+        "target_2035": { "type": "number", "description": "CRREM pathway target for 2035 in kgCO₂/m²/yr." },
+        "target_2040": { "type": "number", "description": "CRREM pathway target for 2040 in kgCO₂/m²/yr." },
+        "target_2050": { "type": "number", "description": "CRREM pathway target for 2050 in kgCO₂/m²/yr (net-zero)." },
+        "stranding_year": {
+          "type": ["integer", "null"],
+          "minimum": 2024,
+          "maximum": 2100,
+          "description": "Year the asset crosses above the CRREM pathway (becomes stranded). Null if currently pathway-aligned."
+        },
+        "current_gap_pct": {
+          "type": "number",
+          "description": "Percentage by which actual carbon intensity exceeds the current-year pathway target. Negative value means the asset is below target (aligned)."
+        },
+        "pathway_name": {
+          "type": "string",
+          "enum": ["1.5°C", "2°C"],
+          "description": "Climate scenario underpinning the CRREM pathway."
+        }
+      }
+    },
+
+    "trajectory": {
+      "type": "array",
+      "description": "Year-by-year trajectory data used to draw the pathway chart and populate the pathway table.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["year", "actual_kgco2_m2", "pathway_target_kgco2_m2", "gap_kgco2_m2", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "year": { "type": "integer", "description": "Calendar year." },
+          "actual_kgco2_m2": {
+            "type": "number",
+            "description": "Actual (or projected) carbon intensity for this year in kgCO₂/m²/yr."
+          },
+          "pathway_target_kgco2_m2": {
+            "type": "number",
+            "description": "CRREM pathway target for this year in kgCO₂/m²/yr."
+          },
+          "gap_kgco2_m2": {
+            "type": "number",
+            "description": "Difference: actual minus pathway target. Positive = above target (worse); negative = below target (better)."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["aligned", "at-risk", "stranded"],
+            "description": "'aligned' = below pathway; 'at-risk' = within 10% above; 'stranded' = more than 10% above pathway."
+          }
+        }
+      }
+    },
+
+    "emission_factors": {
+      "type": "object",
+      "description": "Grid and fuel emission factors used to calculate carbon intensity.",
+      "required": ["electricity_kgco2_kwh", "gas_kgco2_kwh", "year"],
+      "additionalProperties": false,
+      "properties": {
+        "electricity_kgco2_kwh": {
+          "type": "number",
+          "description": "Grid electricity emission factor in kgCO₂/kWh."
+        },
+        "gas_kgco2_kwh": {
+          "type": "number",
+          "description": "Natural gas emission factor in kgCO₂/kWh."
+        },
+        "other_kgco2_kwh": {
+          "type": "number",
+          "description": "Emission factor for other fuels (district heat, oil, etc.) in kgCO₂/kWh. Optional."
+        },
+        "year": {
+          "type": "integer",
+          "description": "Reference year for these emission factors."
+        },
+        "source": {
+          "type": "string",
+          "description": "Data source citation (e.g. 'US EPA eGRID 2023', 'BEIS UK 2023')."
+        }
+      }
+    },
+
+    "recommendations": {
+      "type": "array",
+      "description": "Ranked decarbonization recommendations with carbon impact and cost guidance.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["rank", "title", "action", "carbon_reduction_pct", "capex_range", "priority"],
+        "additionalProperties": false,
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Priority rank (1 = highest impact or urgency)."
+          },
+          "title": {
+            "type": "string",
+            "description": "Short measure title (e.g. 'Heat Pump Conversion', 'LED Retrofit')."
+          },
+          "action": {
+            "type": "string",
+            "description": "One- or two-sentence description of the specific action required."
+          },
+          "carbon_reduction_pct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Estimated percentage reduction in total building carbon intensity if this measure is implemented."
+          },
+          "capex_range": {
+            "type": "string",
+            "description": "Estimated capital cost range (e.g. '$50K–$80K', '$1.2M–$1.8M')."
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["immediate", "near-term", "long-term"],
+            "description": "'immediate' = within 1 year; 'near-term' = 1–5 years; 'long-term' = 5+ years."
+          }
+        }
+      }
+    },
+
+    "tcfd_context": {
+      "type": "object",
+      "description": "Optional TCFD-aligned climate risk context. Include when preparing climate disclosures or TCFD-aligned reporting.",
+      "additionalProperties": false,
+      "properties": {
+        "physical_risk_score": {
+          "type": "string",
+          "description": "Qualitative or scored physical climate risk level (e.g. 'Low', 'Medium', 'High', or '3.2/5')."
+        },
+        "transition_risk_level": {
+          "type": "string",
+          "enum": ["Low", "Medium", "High", "Very High"],
+          "description": "Transition risk level based on regulatory exposure, carbon pricing, and stranding proximity."
+        },
+        "scenario_1_5c_impact": {
+          "type": "string",
+          "description": "Qualitative or quantitative description of asset impact under a 1.5°C warming scenario."
+        },
+        "scenario_2c_impact": {
+          "type": "string",
+          "description": "Qualitative or quantitative description of asset impact under a 2°C warming scenario."
+        },
+        "governance_notes": {
+          "type": "string",
+          "description": "Notes on climate governance, board oversight, or management accountability relevant to this asset."
+        }
+      }
+    },
+
+    "prepared_by":   { "type": "string", "description": "Name of the firm or individual preparing this report." },
+    "prepared_for":  { "type": "string", "description": "Name of the client or organization receiving this report." },
+    "report_date":   { "type": "string", "format": "date", "description": "Report date in ISO 8601 format (YYYY-MM-DD)." }
+  }
+}

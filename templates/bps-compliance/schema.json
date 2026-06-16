@@ -1,0 +1,162 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BPS Compliance Report",
+  "description": "Data schema for the Building Performance Standard Compliance Analysis report template.",
+  "type": "object",
+  "required": ["property", "regulation", "current_performance", "compliance_periods", "penalty_projection", "prepared_by", "prepared_for", "report_date"],
+  "properties": {
+
+    "property": {
+      "type": "object",
+      "description": "Identifying attributes of the subject building.",
+      "required": ["name", "address", "type", "gfa_sqft", "jurisdiction"],
+      "properties": {
+        "name":        { "type": "string", "description": "Building or property name, e.g. 'One Market Plaza'" },
+        "address":     { "type": "string", "description": "Full street address including city, state, ZIP" },
+        "type":        { "type": "string", "description": "Asset type, e.g. 'office', 'multifamily', 'hotel', 'retail'" },
+        "gfa_sqft":    { "type": "number", "description": "Gross floor area in square feet" },
+        "year_built":  { "type": "integer", "description": "Original year of construction" },
+        "jurisdiction": {
+          "type": "object",
+          "description": "City and state where the BPS applies.",
+          "required": ["city", "state"],
+          "properties": {
+            "city":  { "type": "string" },
+            "state": { "type": "string" }
+          }
+        }
+      }
+    },
+
+    "regulation": {
+      "type": "object",
+      "description": "The specific building performance standard governing this property.",
+      "required": ["name", "authority", "compliance_start_year", "reporting_cycle", "framework"],
+      "properties": {
+        "name":                 { "type": "string", "description": "Regulation name, e.g. 'Local Law 97', 'DC BEPS', 'Chicago Building Performance Standard'" },
+        "authority":            { "type": "string", "description": "Enforcing agency, e.g. 'NYC Department of Buildings'" },
+        "compliance_start_year":{ "type": "integer", "description": "First compliance year for penalty exposure" },
+        "reporting_cycle":      { "type": "string", "enum": ["annual", "biennial"], "description": "How often compliance is reported" },
+        "framework":            { "type": "string", "enum": ["carbon_intensity", "energy_intensity", "prescriptive"], "description": "Metric type the standard uses" },
+        "penalty_rate_usd_per_tco2e": {
+          "type": "number",
+          "description": "Fine per metric ton of CO2e over the threshold, where applicable (e.g. $268/tCO2e for LL97)"
+        },
+        "notes": { "type": "string", "description": "Optional clarifying context about the regulation" }
+      }
+    },
+
+    "current_performance": {
+      "type": "object",
+      "description": "Measured or benchmarked performance for the current or most recent compliance year.",
+      "required": ["compliance_status"],
+      "properties": {
+        "actual_carbon_kgco2_m2yr": {
+          "type": "number",
+          "description": "Carbon intensity in kgCO2e/m2/yr (for carbon_intensity framework)"
+        },
+        "actual_eui_kbtu_sqft":     {
+          "type": "number",
+          "description": "Site EUI in kBtu/sqft/yr (for energy_intensity framework)"
+        },
+        "actual_emissions_tco2e":   {
+          "type": "number",
+          "description": "Absolute building emissions in metric tons CO2e"
+        },
+        "benchmark_threshold":      {
+          "type": "number",
+          "description": "The applicable threshold (tCO2e, kgCO2/m2, or EUI) for the current period"
+        },
+        "compliance_status": {
+          "type": "string",
+          "enum": ["compliant", "non-compliant", "at-risk"],
+          "description": "'compliant' = below threshold; 'non-compliant' = above threshold with active penalty; 'at-risk' = within 10% of threshold"
+        },
+        "penalty_per_year_usd": {
+          "type": "number",
+          "description": "Estimated annual fine if non-compliant. Omit or null if compliant."
+        },
+        "performance_year": {
+          "type": "integer",
+          "description": "Calendar year of the measured data, e.g. 2024"
+        },
+        "data_source": {
+          "type": "string",
+          "description": "Where the consumption data came from, e.g. 'ENERGY STAR Portfolio Manager', 'utility bills', 'audit'"
+        }
+      }
+    },
+
+    "compliance_periods": {
+      "type": "array",
+      "description": "Projected compliance status and penalty exposure for each regulatory period.",
+      "items": {
+        "type": "object",
+        "required": ["period_label", "threshold_tco2e", "projected_emissions_tco2e", "compliance_status"],
+        "properties": {
+          "period_label":             { "type": "string", "description": "Human-readable label, e.g. '2024-2029'" },
+          "threshold_tco2e":          { "type": "number", "description": "Allowed emissions ceiling in tCO2e for this period" },
+          "projected_emissions_tco2e":{ "type": "number", "description": "Projected emissions absent additional action" },
+          "projected_penalty_usd":    { "type": "number", "description": "Estimated annual penalty if over threshold. Null if compliant." },
+          "compliance_status":        { "type": "string", "enum": ["compliant", "non-compliant", "at-risk"] },
+          "notes":                    { "type": "string", "description": "Optional context, e.g. 'threshold tightens in 2030'" }
+        }
+      }
+    },
+
+    "pathway_to_compliance": {
+      "type": "array",
+      "description": "Ordered list of measures that close the compliance gap, ranked by emissions reduction per dollar.",
+      "items": {
+        "type": "object",
+        "required": ["measure", "capex", "emissions_reduction_tco2e", "implementation_year", "closes_gap_pct"],
+        "properties": {
+          "measure":                   { "type": "string", "description": "Measure description, e.g. 'Heat pump retrofit — HVAC'" },
+          "capex":                     { "type": "number", "description": "Estimated capital cost in USD" },
+          "annual_savings_usd":        { "type": "number", "description": "Estimated annual operating cost savings from this measure" },
+          "emissions_reduction_tco2e": { "type": "number", "description": "Annual tCO2e reduction attributable to this measure" },
+          "implementation_year":       { "type": "integer", "description": "Target or recommended implementation year" },
+          "closes_gap_pct":            { "type": "number", "description": "Percentage of total compliance gap this measure closes (0-100)" },
+          "running_gap_closed_pct":    { "type": "number", "description": "Cumulative % of gap closed including this and prior measures" },
+          "incentives":                { "type": "string", "description": "Applicable incentive programs, semicolon-delimited" },
+          "notes":                     { "type": "string" }
+        }
+      }
+    },
+
+    "penalty_projection": {
+      "type": "array",
+      "description": "Year-by-year penalty table showing the cost of inaction.",
+      "items": {
+        "type": "object",
+        "required": ["year", "threshold_tco2e", "projected_emissions_tco2e", "annual_penalty_usd", "cumulative_penalty_usd"],
+        "properties": {
+          "year":                      { "type": "integer" },
+          "threshold_tco2e":           { "type": "number" },
+          "projected_emissions_tco2e": { "type": "number" },
+          "annual_penalty_usd":        { "type": "number" },
+          "cumulative_penalty_usd":    { "type": "number" }
+        }
+      }
+    },
+
+    "certifications": {
+      "type": "array",
+      "description": "Green certifications relevant to this property and jurisdiction.",
+      "items": {
+        "type": "object",
+        "required": ["name", "status"],
+        "properties": {
+          "name":               { "type": "string", "description": "Certification name, e.g. 'ENERGY STAR', 'LEED O+M', 'WELL'" },
+          "status":             { "type": "string", "enum": ["achieved", "in-progress", "recommended"], "description": "Current status" },
+          "penalty_offset_pct": { "type": "number", "description": "If the regulation grants a penalty reduction for this cert, the % offset (e.g. 30)" },
+          "description":        { "type": "string", "description": "Brief note on relevance or action required" }
+        }
+      }
+    },
+
+    "prepared_by":   { "type": "string", "description": "Author or firm that prepared the report" },
+    "prepared_for":  { "type": "string", "description": "Client or recipient organization" },
+    "report_date":   { "type": "string", "description": "ISO 8601 date the report was issued, e.g. '2026-06-16'" }
+  }
+}

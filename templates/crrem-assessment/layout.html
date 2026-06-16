@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRREM Carbon Pathway Assessment</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─────────────────────────────────────────────
+       BRAND VARIABLES — matches rsra/layout.html
+    ───────────────────────────────────────────── */
+    :root {
+      --color-primary:    var(--brand-color-primary,   #0F1923);
+      --color-secondary:  var(--brand-color-secondary, #2D6A4F);
+      --color-accent:     var(--brand-color-accent,    #F0F4F8);
+      --color-highlight:  var(--brand-color-highlight, #52B788);
+      --color-text:       var(--brand-color-text,      #0F1923);
+      --color-text-muted: var(--brand-color-muted,     #6B7280);
+      --color-border:     var(--brand-color-border,    #E5E7EB);
+      --font-heading:     var(--brand-font-heading,    'Inter', system-ui, sans-serif);
+      --font-body:        var(--brand-font-body,       'Inter', system-ui, sans-serif);
+      --font-mono:        var(--brand-font-mono,       'JetBrains Mono', monospace);
+
+      /* Status colors */
+      --status-aligned-bg:   #D1FAE5;
+      --status-aligned-fg:   #065F46;
+      --status-aligned-border: #34D399;
+      --status-atrisk-bg:    #FEF3C7;
+      --status-atrisk-fg:    #92400E;
+      --status-atrisk-border: #F59E0B;
+      --status-stranded-bg:  #FEF2F2;
+      --status-stranded-fg:  #991B1B;
+      --status-stranded-border: #EF4444;
+
+      /* Priority badge colors */
+      --priority-immediate-bg:  #FEF2F2;
+      --priority-immediate-fg:  #991B1B;
+      --priority-nearterm-bg:   #FEF3C7;
+      --priority-nearterm-fg:   #92400E;
+      --priority-longterm-bg:   #EFF6FF;
+      --priority-longterm-fg:   #1E40AF;
+
+      /* Layout */
+      --page-margin-top:    18mm;
+      --page-margin-side:   16mm;
+      --page-margin-bottom: 20mm;
+    }
+
+    /* ─────────────────────────────────────────────
+       PAGED.JS PAGE RULES
+    ───────────────────────────────────────────── */
+    @page {
+      size: letter;
+      margin: var(--page-margin-top) var(--page-margin-side) var(--page-margin-bottom);
+
+      @bottom-center {
+        content: "Confidential — " string(orgName);
+        font-family: var(--font-body);
+        font-size: 8pt;
+        color: var(--color-text-muted);
+        text-align: center;
+      }
+      @bottom-right {
+        content: counter(page);
+        font-family: var(--font-body);
+        font-size: 8pt;
+        color: var(--color-text-muted);
+        text-align: right;
+      }
+    }
+
+    @page cover {
+      margin: 0;
+      @bottom-left   { content: none; }
+      @bottom-center { content: none; }
+      @bottom-right  { content: none; }
+    }
+
+    @page content {
+      @top-left {
+        content: string(propertyName);
+        font-family: var(--font-body);
+        font-size: 8pt;
+        color: var(--color-text-muted);
+        padding-top: 4mm;
+      }
+      @top-right {
+        content: "CRREM Carbon Pathway Assessment";
+        font-family: var(--font-body);
+        font-size: 8pt;
+        color: var(--color-text-muted);
+        padding-top: 4mm;
+      }
+    }
+
+    /* ─────────────────────────────────────────────
+       RESET & BASE
+    ───────────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      font-family: var(--font-body);
+      font-size: 10pt;
+      color: var(--color-text);
+      background: #fff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ─────────────────────────────────────────────
+       COVER PAGE
+    ───────────────────────────────────────────── */
+    .page-cover {
+      page: cover;
+      break-after: page;
+      width: 100%;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    /* Dark header band */
+    .cover-header {
+      background: var(--color-primary);
+      color: #fff;
+      padding: 20mm 18mm 16mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .cover-header .report-label {
+      font-size: 9pt;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-highlight);
+      margin-bottom: 5mm;
+    }
+
+    .cover-header .property-name {
+      font-size: 26pt;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 3mm;
+      string-set: propertyName content();
+    }
+
+    .cover-header .property-meta {
+      font-size: 11pt;
+      font-weight: 300;
+      color: rgba(255,255,255,0.70);
+      margin-bottom: 8mm;
+    }
+
+    /* Carbon intensity hero — large numbers on dark bg */
+    .cover-intensity-row {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      gap: 0;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      padding-top: 6mm;
+    }
+
+    .cover-intensity-cell {
+      padding: 0 6mm;
+      text-align: center;
+    }
+
+    .cover-intensity-cell:first-child {
+      padding-left: 0;
+    }
+
+    .cover-intensity-divider {
+      background: rgba(255,255,255,0.2);
+      align-self: stretch;
+    }
+
+    .cover-intensity-cell .intensity-label {
+      font-size: 8pt;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 2mm;
+    }
+
+    .cover-intensity-cell .intensity-value {
+      font-family: var(--font-mono);
+      font-size: 32pt;
+      font-weight: 500;
+      line-height: 1;
+      color: #fff;
+    }
+
+    .cover-intensity-cell .intensity-value.value-over {
+      color: #FCA5A5; /* red tint for stranded */
+    }
+
+    .cover-intensity-cell .intensity-value.value-under {
+      color: #6EE7B7; /* green tint for aligned */
+    }
+
+    .cover-intensity-cell .intensity-unit {
+      font-size: 8.5pt;
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
+      margin-top: 1mm;
+    }
+
+    /* Cover body — white section */
+    .cover-body {
+      padding: 10mm 18mm 0;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 6mm;
+    }
+
+    /* Stranding status badge — prominent */
+    .stranding-badge {
+      display: flex;
+      align-items: center;
+      gap: 4mm;
+      padding: 5mm 6mm;
+      border-radius: 4px;
+      border-left-width: 4px;
+      border-left-style: solid;
+    }
+
+    .stranding-badge.badge-stranded {
+      background: var(--status-stranded-bg);
+      border-left-color: var(--status-stranded-border);
+    }
+
+    .stranding-badge.badge-aligned {
+      background: var(--status-aligned-bg);
+      border-left-color: var(--status-aligned-border);
+    }
+
+    .stranding-badge .badge-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13pt;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .badge-stranded .badge-icon { background: var(--status-stranded-border); color: #fff; }
+    .badge-aligned  .badge-icon { background: var(--status-aligned-border);  color: #fff; }
+
+    .stranding-badge .badge-label {
+      font-size: 14pt;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-stranded .badge-label { color: var(--status-stranded-fg); }
+    .badge-aligned  .badge-label { color: var(--status-aligned-fg);  }
+
+    .stranding-badge .badge-sublabel {
+      font-size: 9pt;
+      margin-left: auto;
+      font-weight: 500;
+    }
+
+    .badge-stranded .badge-sublabel { color: var(--status-stranded-fg); }
+    .badge-aligned  .badge-sublabel { color: var(--status-aligned-fg);  }
+
+    /* Cover meta grid */
+    .cover-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5mm 8mm;
+    }
+
+    .cover-meta-item {
+      border-top: 2px solid var(--color-highlight);
+      padding-top: 3mm;
+    }
+
+    .cover-meta-item .meta-label {
+      font-size: 7.5pt;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 1.5mm;
+    }
+
+    .cover-meta-item .meta-value {
+      font-size: 10.5pt;
+      font-weight: 500;
+      color: var(--color-text);
+    }
+
+    /* Cover footer */
+    .cover-footer {
+      padding: 5mm 18mm 8mm;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--color-border);
+      background: #fff;
+    }
+
+    .cover-footer .org-logo {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+    }
+
+    .cover-footer .logo-mark {
+      width: 22px;
+      height: 22px;
+      background: var(--color-primary);
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cover-footer .logo-mark svg {
+      width: 14px;
+      height: 14px;
+      fill: #fff;
+    }
+
+    .cover-footer .org-name {
+      font-size: 9pt;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .cover-footer .cover-footer-right {
+      text-align: right;
+    }
+
+    .cover-footer .confidential-label {
+      font-size: 7.5pt;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .cover-footer .report-date {
+      font-size: 8pt;
+      color: var(--color-text-muted);
+      margin-top: 0.5mm;
+    }
+
+    /* ─────────────────────────────────────────────
+       CONTENT PAGES
+    ───────────────────────────────────────────── */
+    .page-content {
+      page: content;
+    }
+
+    /* ─────────────────────────────────────────────
+       SECTION STRUCTURE — matches rsra
+    ───────────────────────────────────────────── */
+    .section {
+      break-inside: avoid-page;
+      margin-bottom: 9mm;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      margin-bottom: 4mm;
+      padding-bottom: 2.5mm;
+      border-bottom: 1.5px solid var(--color-border);
+    }
+
+    .section-accent {
+      width: 3px;
+      height: 18px;
+      background: var(--color-secondary);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-family: var(--font-heading);
+      font-size: 14pt;
+      font-weight: 700;
+      color: var(--color-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .section-subtitle {
+      font-size: 8.5pt;
+      color: var(--color-text-muted);
+      margin-left: auto;
+    }
+
+    /* ─────────────────────────────────────────────
+       TABLES — matches rsra style
+    ───────────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9pt;
+    }
+
+    thead th {
+      background: var(--color-primary);
+      color: #fff;
+      font-weight: 600;
+      font-size: 8pt;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 3mm 4mm;
+      text-align: left;
+    }
+
+    thead th:first-child { border-radius: 2px 0 0 0; }
+    thead th:last-child  { border-radius: 0 2px 0 0; }
+
+    tbody tr:nth-child(odd)  { background: var(--color-accent); }
+    tbody tr:nth-child(even) { background: #fff; }
+
+    tbody td {
+      padding: 2.5mm 4mm;
+      vertical-align: middle;
+      line-height: 1.4;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    tbody tr.row-total td {
+      background: var(--color-primary);
+      color: #fff;
+      font-weight: 700;
+      border: none;
+    }
+
+    td.align-right, th.align-right { text-align: right; }
+    td.align-center, th.align-center { text-align: center; }
+
+    /* ─────────────────────────────────────────────
+       CARBON PERFORMANCE PAGE
+    ───────────────────────────────────────────── */
+
+    /* Large KPI scorecards */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 5mm;
+      margin-bottom: 6mm;
+    }
+
+    .kpi-card {
+      border: 1.5px solid var(--color-border);
+      border-radius: 4px;
+      padding: 4mm 5mm;
+      text-align: center;
+    }
+
+    .kpi-card .kpi-label {
+      font-size: 7.5pt;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 2mm;
+    }
+
+    .kpi-card .kpi-value {
+      font-family: var(--font-mono);
+      font-size: 22pt;
+      font-weight: 500;
+      line-height: 1;
+      color: var(--color-primary);
+    }
+
+    .kpi-card .kpi-value.kpi-over  { color: #DC2626; }
+    .kpi-card .kpi-value.kpi-under { color: var(--color-secondary); }
+
+    .kpi-card .kpi-unit {
+      font-size: 8pt;
+      color: var(--color-text-muted);
+      margin-top: 1.5mm;
+    }
+
+    /* Gap bar — visual carbon gap indicator */
+    .gap-bar-wrapper {
+      margin-bottom: 6mm;
+      border: 1.5px solid var(--color-border);
+      border-radius: 4px;
+      padding: 4mm 5mm;
+    }
+
+    .gap-bar-label-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2mm;
+      font-size: 8pt;
+    }
+
+    .gap-bar-label-row .gap-label-left  { color: var(--color-secondary); font-weight: 600; }
+    .gap-bar-label-row .gap-label-right { color: var(--color-text-muted); }
+
+    .gap-bar-track {
+      height: 10px;
+      background: var(--color-accent);
+      border-radius: 5px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .gap-bar-fill {
+      height: 100%;
+      border-radius: 5px;
+      transition: width 0s;
+    }
+
+    .gap-bar-fill.fill-stranded { background: linear-gradient(90deg, #F87171, #DC2626); }
+    .gap-bar-fill.fill-aligned  { background: linear-gradient(90deg, #34D399, #2D6A4F); }
+
+    .gap-bar-annotation {
+      font-size: 8pt;
+      margin-top: 2mm;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .gap-bar-annotation.ann-stranded { color: #DC2626; }
+    .gap-bar-annotation.ann-aligned  { color: var(--color-secondary); }
+
+    /* Fuel mix 3-column grid */
+    .fuel-mix-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4mm;
+    }
+
+    .fuel-mix-card {
+      background: var(--color-accent);
+      border-radius: 4px;
+      padding: 4mm 5mm;
+      text-align: center;
+    }
+
+    .fuel-mix-card .fm-icon {
+      font-size: 18pt;
+      margin-bottom: 2mm;
+    }
+
+    .fuel-mix-card .fm-pct {
+      font-family: var(--font-mono);
+      font-size: 20pt;
+      font-weight: 500;
+      color: var(--color-primary);
+      line-height: 1;
+    }
+
+    .fuel-mix-card .fm-label {
+      font-size: 8pt;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-top: 1.5mm;
+    }
+
+    .fuel-mix-card .fm-ef {
+      font-size: 7.5pt;
+      color: var(--color-text-muted);
+      margin-top: 1mm;
+    }
+
+    /* ─────────────────────────────────────────────
+       PATHWAY TABLE — status color coding
+    ───────────────────────────────────────────── */
+    .status-pill {
+      display: inline-block;
+      font-size: 7.5pt;
+      font-weight: 700;
+      padding: 0.8mm 2.5mm;
+      border-radius: 10px;
+      white-space: nowrap;
+      letter-spacing: 0.03em;
+    }
+
+    .status-pill.pill-aligned  { background: var(--status-aligned-bg);  color: var(--status-aligned-fg);  }
+    .status-pill.pill-atrisk   { background: var(--status-atrisk-bg);   color: var(--status-atrisk-fg);   }
+    .status-pill.pill-stranded { background: var(--status-stranded-bg); color: var(--status-stranded-fg); }
+
+    td.cell-aligned  { background: #ECFDF5 !important; }
+    td.cell-atrisk   { background: #FFFBEB !important; }
+    td.cell-stranded { background: #FFF1F1 !important; }
+
+    /* ─────────────────────────────────────────────
+       RECOMMENDATIONS TABLE — priority chips
+    ───────────────────────────────────────────── */
+    .priority-chip {
+      display: inline-block;
+      font-size: 7pt;
+      font-weight: 700;
+      padding: 0.8mm 2.5mm;
+      border-radius: 2px;
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .chip-immediate { background: var(--priority-immediate-bg); color: var(--priority-immediate-fg); }
+    .chip-near-term { background: var(--priority-nearterm-bg);  color: var(--priority-nearterm-fg);  }
+    .chip-long-term { background: var(--priority-longterm-bg);  color: var(--priority-longterm-fg);  }
+
+    .rank-circle {
+      display: inline-flex;
+      width: 6mm;
+      height: 6mm;
+      border-radius: 50%;
+      background: var(--color-secondary);
+      color: #fff;
+      font-size: 7.5pt;
+      font-weight: 700;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ─────────────────────────────────────────────
+       TCFD SECTION
+    ───────────────────────────────────────────── */
+    .tcfd-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5mm;
+      margin-bottom: 6mm;
+    }
+
+    .tcfd-card {
+      border: 1.5px solid var(--color-border);
+      border-radius: 4px;
+      padding: 4mm 5mm;
+    }
+
+    .tcfd-card .tcfd-card-label {
+      font-size: 7.5pt;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 2mm;
+    }
+
+    .tcfd-card .tcfd-card-value {
+      font-size: 11pt;
+      font-weight: 600;
+      color: var(--color-primary);
+      margin-bottom: 1.5mm;
+    }
+
+    .tcfd-card .tcfd-card-detail {
+      font-size: 8.5pt;
+      color: var(--color-text-muted);
+      line-height: 1.4;
+    }
+
+    .risk-level-high     { color: #DC2626; }
+    .risk-level-medium   { color: #D97706; }
+    .risk-level-low      { color: var(--color-secondary); }
+    .risk-level-very-high { color: #991B1B; }
+
+    /* TCFD scenario table */
+    .scenario-table-wrapper {
+      margin-top: 4mm;
+    }
+
+    /* ─────────────────────────────────────────────
+       CONFIDENCE NOTE / DISCLAIMER
+    ───────────────────────────────────────────── */
+    .confidence-note {
+      margin-top: 8mm;
+      padding: 3mm 4mm;
+      background: var(--color-accent);
+      border: 1px solid var(--color-border);
+      border-radius: 3px;
+      font-size: 8.5pt;
+      color: var(--color-text-muted);
+      line-height: 1.45;
+    }
+
+    .confidence-note strong {
+      color: var(--color-text);
+      font-weight: 600;
+    }
+
+    /* ─────────────────────────────────────────────
+       PAGE BREAKS
+    ───────────────────────────────────────────── */
+    .break-before { break-before: page; }
+
+    /* ─────────────────────────────────────────────
+       NAMED STRING ANCHOR (Paged.js)
+    ───────────────────────────────────────────── */
+    #org-name-anchor {
+      string-set: orgName content();
+      display: none;
+    }
+
+    /* Utility */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ──────────────────────────────────────────────────────────────────
+     REPORT DATA — replace with actual report data at render time
+────────────────────────────────────────────────────────────────────── -->
+<script id="report-data" type="application/json">
+{
+  "property": {
+    "name": "Meridian Tower",
+    "address": "350 Market Street, San Francisco, CA 94105",
+    "type": "Office",
+    "country": "US",
+    "gfa_m2": 18600,
+    "year_built": 1992
+  },
+  "performance": {
+    "actual_carbon_kgco2_m2yr": 62.4,
+    "actual_eui_kwh_m2yr": 218,
+    "fuel_mix": {
+      "electricity_pct": 55,
+      "gas_pct": 42,
+      "other_pct": 3
+    }
+  },
+  "pathway": {
+    "target_2025": 39.1,
+    "target_2030": 28.7,
+    "target_2035": 18.4,
+    "target_2040": 11.2,
+    "target_2050": 0.0,
+    "stranding_year": 2019,
+    "current_gap_pct": 59.6,
+    "pathway_name": "1.5°C"
+  },
+  "trajectory": [
+    { "year": 2020, "actual_kgco2_m2": 68.2, "pathway_target_kgco2_m2": 47.5, "gap_kgco2_m2": 20.7, "status": "stranded" },
+    { "year": 2025, "actual_kgco2_m2": 62.4, "pathway_target_kgco2_m2": 39.1, "gap_kgco2_m2": 23.3, "status": "stranded" },
+    { "year": 2030, "actual_kgco2_m2": 57.1, "pathway_target_kgco2_m2": 28.7, "gap_kgco2_m2": 28.4, "status": "stranded" },
+    { "year": 2035, "actual_kgco2_m2": 41.8, "pathway_target_kgco2_m2": 18.4, "gap_kgco2_m2": 23.4, "status": "stranded" },
+    { "year": 2040, "actual_kgco2_m2": 18.0, "pathway_target_kgco2_m2": 11.2, "gap_kgco2_m2": 6.8, "status": "at-risk" },
+    { "year": 2045, "actual_kgco2_m2": 8.2,  "pathway_target_kgco2_m2": 5.1,  "gap_kgco2_m2": 3.1, "status": "at-risk" },
+    { "year": 2050, "actual_kgco2_m2": 2.1,  "pathway_target_kgco2_m2": 0.0,  "gap_kgco2_m2": 2.1, "status": "stranded" }
+  ],
+  "emission_factors": {
+    "electricity_kgco2_kwh": 0.283,
+    "gas_kgco2_kwh": 0.202,
+    "other_kgco2_kwh": 0.185,
+    "year": 2024,
+    "source": "US EPA eGRID 2023 / SUBREGION CAMX"
+  },
+  "recommendations": [
+    {
+      "rank": 1,
+      "title": "Gas Boiler Electrification — Heat Pump Conversion",
+      "action": "Replace the three aging gas boilers (2001 vintage) with high-efficiency variable-speed heat pumps. This is the single largest decarbonization lever for this asset.",
+      "carbon_reduction_pct": 38,
+      "capex_range": "$1.8M–$2.4M",
+      "priority": "immediate"
+    },
+    {
+      "rank": 2,
+      "title": "On-Site Solar PV — Rooftop + Façade",
+      "action": "Install 480 kW of rooftop solar plus 120 kW of integrated façade PV to offset common area and base building loads. Pair with battery storage to capture peak demand savings.",
+      "carbon_reduction_pct": 18,
+      "capex_range": "$1.1M–$1.5M",
+      "priority": "immediate"
+    },
+    {
+      "rank": 3,
+      "title": "Building Envelope — Window Film & Air Sealing",
+      "action": "Apply low-e window film to all south and west elevations and complete a comprehensive air sealing program. Reduces HVAC load and improves comfort at low disruption to tenants.",
+      "carbon_reduction_pct": 9,
+      "capex_range": "$280K–$420K",
+      "priority": "near-term"
+    },
+    {
+      "rank": 4,
+      "title": "Lighting — LED Retrofit & Smart Controls",
+      "action": "Upgrade all common area, parking, and tenant standard-fit lighting to LED with occupancy and daylight sensors. Integrate with the BMS for centralized scheduling.",
+      "carbon_reduction_pct": 6,
+      "capex_range": "$95K–$140K",
+      "priority": "near-term"
+    },
+    {
+      "rank": 5,
+      "title": "Green Power Procurement — 100% Renewable Tariff",
+      "action": "Execute a Green Tariff or PPA agreement with PG&E to cover 100% of landlord electricity consumption with certified renewable energy certificates.",
+      "carbon_reduction_pct": 14,
+      "capex_range": "$0 (premium on utility rate)",
+      "priority": "long-term"
+    }
+  ],
+  "tcfd_context": {
+    "physical_risk_score": "Medium — 2.8/5",
+    "transition_risk_level": "High",
+    "scenario_1_5c_impact": "Under a 1.5°C scenario, California's carbon price backstop and SF BPS fines could total $290K–$490K annually by 2030 if the gas boiler conversion is deferred. Asset value at risk: 8–12% on exit cap rate compression.",
+    "scenario_2c_impact": "Under a 2°C scenario, compliance costs are lower ($120K–$220K/yr by 2030) but stranding risk persists beyond 2035. Physical risk from extreme heat events increases HVAC loads ~6–9% by 2040.",
+    "governance_notes": "Board-level ESG committee with quarterly asset-level carbon reporting in place. No formal TCFD disclosure made to date. Recommend integrating CRREM targets into investment committee approval criteria."
+  },
+  "prepared_by": "Audette Sustainability Intelligence",
+  "prepared_for": "Meridian Capital Partners — Asset Management",
+  "report_date": "2026-06-16"
+}
+</script>
+
+<script>
+  window.PagedConfig = {
+    auto: true,
+    before: function() { return populateReport(); }
+  };
+
+  function populateReport() {
+    var dataEl = document.getElementById('report-data');
+    if (!dataEl) return;
+
+    var data;
+    try {
+      data = JSON.parse(dataEl.textContent);
+    } catch(e) {
+      console.error('CRREM: failed to parse report-data JSON', e);
+      return;
+    }
+
+    var prop    = data.property        || {};
+    var perf    = data.performance     || {};
+    var pathway = data.pathway         || {};
+    var traj    = data.trajectory      || [];
+    var efacs   = data.emission_factors || {};
+    var recs    = data.recommendations || [];
+    var tcfd    = data.tcfd_context    || null;
+
+    /* ── Helpers ── */
+    function safe(v) {
+      return (v !== undefined && v !== null && v !== '') ? String(v) : '—';
+    }
+
+    function fmt1(n) {
+      if (typeof n !== 'number') return '—';
+      return n.toFixed(1);
+    }
+
+    function fmt0(n) {
+      if (typeof n !== 'number') return '—';
+      return Math.round(n).toLocaleString('en-US');
+    }
+
+    function fmtPct(n) {
+      if (typeof n !== 'number') return '—';
+      var sign = n >= 0 ? '+' : '';
+      return sign + n.toFixed(1) + '%';
+    }
+
+    function statusPill(status) {
+      if (status === 'aligned')  return '<span class="status-pill pill-aligned">Aligned</span>';
+      if (status === 'at-risk')  return '<span class="status-pill pill-atrisk">At Risk</span>';
+      if (status === 'stranded') return '<span class="status-pill pill-stranded">Stranded</span>';
+      return '<span class="status-pill">' + safe(status) + '</span>';
+    }
+
+    function statusCellClass(status) {
+      if (status === 'aligned')  return 'cell-aligned';
+      if (status === 'at-risk')  return 'cell-atrisk';
+      if (status === 'stranded') return 'cell-stranded';
+      return '';
+    }
+
+    function priorityChip(priority) {
+      if (priority === 'immediate')  return '<span class="priority-chip chip-immediate">Immediate</span>';
+      if (priority === 'near-term')  return '<span class="priority-chip chip-near-term">Near-Term</span>';
+      if (priority === 'long-term')  return '<span class="priority-chip chip-long-term">Long-Term</span>';
+      return '<span class="priority-chip">' + safe(priority) + '</span>';
+    }
+
+    function riskClass(level) {
+      if (!level) return '';
+      if (level === 'Very High') return 'risk-level-very-high';
+      if (level === 'High')      return 'risk-level-high';
+      if (level === 'Medium' || level.toLowerCase().startsWith('medium')) return 'risk-level-medium';
+      return 'risk-level-low';
+    }
+
+    /* ── Named string anchors ── */
+    setText('org-name-anchor', safe(data.prepared_for || data.prepared_by || 'Confidential'));
+
+    /* ─────────── COVER ─────────── */
+    setText('cover-property-name',    safe(prop.name));
+    setText('cover-property-meta',    [prop.type, prop.country, prop.gfa_m2 ? fmt0(prop.gfa_m2) + ' m²' : null, prop.year_built ? 'Built ' + prop.year_built : null].filter(Boolean).join('  ·  '));
+
+    /* Carbon intensity hero */
+    var actual   = perf.actual_carbon_kgco2_m2yr;
+    var target25 = pathway.target_2025;
+    var isStranded = pathway.stranding_year !== null && pathway.stranding_year !== undefined;
+    var gapPct   = pathway.current_gap_pct;
+
+    var actualEl = document.getElementById('cover-intensity-actual');
+    if (actualEl) {
+      actualEl.textContent = typeof actual === 'number' ? fmt1(actual) : '—';
+      actualEl.className   = 'intensity-value ' + (isStranded ? 'value-over' : 'value-under');
+    }
+    var targetEl = document.getElementById('cover-intensity-target');
+    if (targetEl) {
+      targetEl.textContent = typeof target25 === 'number' ? fmt1(target25) : '—';
+    }
+
+    /* Stranding badge */
+    var badge = document.getElementById('stranding-badge');
+    if (badge) {
+      if (isStranded) {
+        badge.className = 'stranding-badge badge-stranded';
+        setText('badge-label', 'STRANDED ' + pathway.stranding_year);
+        setText('badge-sublabel', (typeof gapPct === 'number' ? '+' + gapPct.toFixed(1) + '% above ' + pathway.pathway_name + ' pathway' : ''));
+        badge.querySelector('.badge-icon').textContent = '!';
+      } else {
+        badge.className = 'stranding-badge badge-aligned';
+        setText('badge-label', 'PATHWAY ALIGNED');
+        setText('badge-sublabel', (typeof gapPct === 'number' ? Math.abs(gapPct).toFixed(1) + '% below ' + pathway.pathway_name + ' pathway' : ''));
+        badge.querySelector('.badge-icon').textContent = '✓';
+      }
+    }
+
+    /* Cover meta grid */
+    setText('cover-meta-gfa',      prop.gfa_m2    ? fmt0(prop.gfa_m2) + ' m²' : '—');
+    setText('cover-meta-type',     safe(prop.type));
+    setText('cover-meta-built',    prop.year_built ? String(prop.year_built) : '—');
+    setText('cover-meta-pathway',  safe(pathway.pathway_name));
+    setText('cover-meta-for',      safe(data.prepared_for));
+    setText('cover-meta-date',     safe(data.report_date));
+
+    /* ─────────── PAGE 2: CARBON PERFORMANCE ─────────── */
+    setText('kpi-actual', typeof actual === 'number' ? fmt1(actual) : '—');
+    setText('kpi-target', typeof target25 === 'number' ? fmt1(target25) : '—');
+
+    var kpiActualEl = document.getElementById('kpi-actual');
+    if (kpiActualEl) kpiActualEl.className = 'kpi-value ' + (isStranded ? 'kpi-over' : 'kpi-under');
+
+    var gapAbs = (typeof actual === 'number' && typeof target25 === 'number') ? (actual - target25) : null;
+    setText('kpi-gap', gapAbs !== null ? (gapAbs >= 0 ? '+' : '') + fmt1(gapAbs) : '—');
+    var kpiGapEl = document.getElementById('kpi-gap');
+    if (kpiGapEl) kpiGapEl.className = 'kpi-value ' + (gapAbs !== null && gapAbs > 0 ? 'kpi-over' : 'kpi-under');
+
+    /* Gap bar */
+    var barFill = document.getElementById('gap-bar-fill');
+    var barAnnot = document.getElementById('gap-bar-annotation');
+    if (barFill && typeof gapPct === 'number') {
+      var fillPct = Math.min(Math.abs(gapPct), 100);
+      barFill.style.width = fillPct + '%';
+      barFill.className = 'gap-bar-fill ' + (isStranded ? 'fill-stranded' : 'fill-aligned');
+      if (barAnnot) {
+        barAnnot.textContent = isStranded
+          ? ('+' + gapPct.toFixed(1) + '% above ' + pathway.pathway_name + ' pathway target — immediate action required')
+          : (Math.abs(gapPct).toFixed(1) + '% below pathway target — currently aligned');
+        barAnnot.className = 'gap-bar-annotation ' + (isStranded ? 'ann-stranded' : 'ann-aligned');
+      }
+    }
+
+    /* Fuel mix cards */
+    var fm = perf.fuel_mix || {};
+    setText('fm-elec-pct', typeof fm.electricity_pct === 'number' ? fm.electricity_pct + '%' : '—');
+    setText('fm-gas-pct',  typeof fm.gas_pct         === 'number' ? fm.gas_pct         + '%' : '—');
+    setText('fm-other-pct',typeof fm.other_pct        === 'number' ? fm.other_pct        + '%' : '—');
+    setText('fm-elec-ef',  typeof efacs.electricity_kgco2_kwh === 'number' ? efacs.electricity_kgco2_kwh.toFixed(3) + ' kgCO₂/kWh' : '—');
+    setText('fm-gas-ef',   typeof efacs.gas_kgco2_kwh         === 'number' ? efacs.gas_kgco2_kwh.toFixed(3)         + ' kgCO₂/kWh' : '—');
+    setText('fm-other-ef', typeof efacs.other_kgco2_kwh       === 'number' ? efacs.other_kgco2_kwh.toFixed(3)       + ' kgCO₂/kWh' : 'Varies');
+    setText('ef-source', efacs.source ? ('Emission factors: ' + efacs.source + (efacs.year ? ', ' + efacs.year : '')) : '');
+
+    /* ─────────── PAGE 3: PATHWAY TABLE ─────────── */
+    var trajTbody = document.getElementById('trajectory-tbody');
+    if (trajTbody && traj.length > 0) {
+      var trajHtml = '';
+      traj.forEach(function(row) {
+        var sc = statusCellClass(row.status);
+        trajHtml += '<tr>';
+        trajHtml += '<td>' + safe(row.year) + '</td>';
+        trajHtml += '<td class="align-right">' + fmt1(row.actual_kgco2_m2) + '</td>';
+        trajHtml += '<td class="align-right">' + fmt1(row.pathway_target_kgco2_m2) + '</td>';
+        var gapVal = row.gap_kgco2_m2;
+        var gapStr = typeof gapVal === 'number' ? ((gapVal >= 0 ? '+' : '') + fmt1(gapVal)) : '—';
+        trajHtml += '<td class="align-right ' + sc + '" style="font-weight:600;font-family:var(--font-mono)">' + gapStr + '</td>';
+        trajHtml += '<td class="align-center ' + sc + '">' + statusPill(row.status) + '</td>';
+        trajHtml += '</tr>';
+      });
+      trajTbody.innerHTML = trajHtml;
+    }
+
+    /* Pathway milestones strip */
+    setText('pw-2030', typeof pathway.target_2030 === 'number' ? fmt1(pathway.target_2030) : '—');
+    setText('pw-2035', typeof pathway.target_2035 === 'number' ? fmt1(pathway.target_2035) : '—');
+    setText('pw-2040', typeof pathway.target_2040 === 'number' ? fmt1(pathway.target_2040) : '—');
+    setText('pw-2050', typeof pathway.target_2050 === 'number' ? fmt1(pathway.target_2050) : '—');
+
+    /* ─────────── PAGE 4: RECOMMENDATIONS ─────────── */
+    var recsTbody = document.getElementById('recommendations-tbody');
+    if (recsTbody && recs.length > 0) {
+      var recsHtml = '';
+      recs.forEach(function(r) {
+        recsHtml += '<tr>';
+        recsHtml += '<td class="align-center"><span class="rank-circle">' + r.rank + '</span></td>';
+        recsHtml += '<td>' + priorityChip(r.priority) + '</td>';
+        recsHtml += '<td><strong>' + safe(r.title) + '</strong><br><span style="font-size:8.5pt;color:var(--color-text-muted)">' + safe(r.action) + '</span></td>';
+        recsHtml += '<td class="align-right" style="font-weight:600;color:var(--color-secondary)">' + (typeof r.carbon_reduction_pct === 'number' ? '−' + r.carbon_reduction_pct + '%' : '—') + '</td>';
+        recsHtml += '<td class="align-right">' + safe(r.capex_range) + '</td>';
+        recsHtml += '</tr>';
+      });
+      recsTbody.innerHTML = recsHtml;
+    }
+
+    /* ─────────── PAGE 5: TCFD (conditional) ─────────── */
+    var tcfdPage = document.getElementById('page-tcfd');
+    if (tcfdPage) {
+      if (tcfd) {
+        tcfdPage.style.display = '';
+
+        /* Physical risk card */
+        var prValue = document.getElementById('tcfd-physical-risk-value');
+        if (prValue) {
+          prValue.textContent = safe(tcfd.physical_risk_score);
+          var lowerPR = (tcfd.physical_risk_score || '').toLowerCase();
+          if (lowerPR.includes('high'))   prValue.className = 'tcfd-card-value risk-level-high';
+          else if (lowerPR.includes('medium')) prValue.className = 'tcfd-card-value risk-level-medium';
+          else prValue.className = 'tcfd-card-value risk-level-low';
+        }
+
+        /* Transition risk card */
+        var trValue = document.getElementById('tcfd-transition-risk-value');
+        if (trValue) {
+          trValue.textContent = safe(tcfd.transition_risk_level);
+          trValue.className = 'tcfd-card-value ' + riskClass(tcfd.transition_risk_level);
+        }
+
+        /* Scenario table */
+        var scenTbody = document.getElementById('scenario-tbody');
+        if (scenTbody) {
+          var scenHtml = '';
+          scenHtml += '<tr>';
+          scenHtml += '<td><strong>1.5°C Scenario</strong></td>';
+          scenHtml += '<td>' + safe(tcfd.scenario_1_5c_impact) + '</td>';
+          scenHtml += '</tr>';
+          scenHtml += '<tr>';
+          scenHtml += '<td><strong>2°C Scenario</strong></td>';
+          scenHtml += '<td>' + safe(tcfd.scenario_2c_impact) + '</td>';
+          scenHtml += '</tr>';
+          if (tcfd.governance_notes) {
+            scenHtml += '<tr>';
+            scenHtml += '<td><strong>Governance</strong></td>';
+            scenHtml += '<td>' + safe(tcfd.governance_notes) + '</td>';
+            scenHtml += '</tr>';
+          }
+          scenTbody.innerHTML = scenHtml;
+        }
+      } else {
+        /* No TCFD data — hide the page */
+        tcfdPage.style.display = 'none';
+      }
+    }
+  }
+
+  /* ── DOM helpers ── */
+  function setText(id, val) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  function setHtml(id, val) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = val;
+  }
+</script>
+
+<!-- Named string anchor for Paged.js running footer -->
+<span id="org-name-anchor" aria-hidden="true"></span>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 1: COVER
+══════════════════════════════════════════════════════════════ -->
+<div class="page-cover">
+
+  <!-- Dark header band with property name + intensity hero -->
+  <div class="cover-header">
+    <div class="report-label">CRREM Carbon Pathway Assessment</div>
+    <h1 class="property-name" id="cover-property-name">Property Name</h1>
+    <div class="property-meta" id="cover-property-meta">Office · US · — m²</div>
+
+    <!-- Carbon intensity hero: actual vs pathway target -->
+    <div class="cover-intensity-row">
+      <div class="cover-intensity-cell">
+        <div class="intensity-label">Actual Carbon Intensity</div>
+        <div class="intensity-value value-over" id="cover-intensity-actual">—</div>
+        <div class="intensity-unit">kgCO₂/m²/yr</div>
+      </div>
+      <div class="cover-intensity-divider"></div>
+      <div class="cover-intensity-cell">
+        <div class="intensity-label">2025 Pathway Target</div>
+        <div class="intensity-value" id="cover-intensity-target">—</div>
+        <div class="intensity-unit">kgCO₂/m²/yr</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- White body: status badge + meta grid -->
+  <div class="cover-body">
+
+    <!-- Stranding status badge -->
+    <div id="stranding-badge" class="stranding-badge badge-stranded">
+      <div class="badge-icon">!</div>
+      <div class="badge-label" id="badge-label">STRANDED —</div>
+      <div class="badge-sublabel" id="badge-sublabel"></div>
+    </div>
+
+    <!-- Property meta grid -->
+    <div class="cover-meta-grid">
+      <div class="cover-meta-item">
+        <div class="meta-label">Asset Type</div>
+        <div class="meta-value" id="cover-meta-type">—</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="meta-label">Gross Floor Area</div>
+        <div class="meta-value" id="cover-meta-gfa">—</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="meta-label">Year Built</div>
+        <div class="meta-value" id="cover-meta-built">—</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="meta-label">Climate Scenario</div>
+        <div class="meta-value" id="cover-meta-pathway">—</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="meta-label">Prepared For</div>
+        <div class="meta-value" id="cover-meta-for">—</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="meta-label">Report Date</div>
+        <div class="meta-value" id="cover-meta-date">—</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Cover footer -->
+  <div class="cover-footer">
+    <div class="org-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="0" y="0" width="6" height="6" rx="1"/>
+          <rect x="8" y="0" width="6" height="6" rx="1"/>
+          <rect x="0" y="8" width="6" height="6" rx="1"/>
+          <rect x="8" y="8" width="6" height="6" rx="1"/>
+        </svg>
+      </div>
+      <span class="org-name">Audette · Sustainability Intelligence</span>
+    </div>
+    <div class="cover-footer-right">
+      <div class="confidential-label">Confidential</div>
+      <div class="report-date" id="cover-footer-date"></div>
+    </div>
+  </div>
+
+</div><!-- /page-cover -->
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 2: CARBON PERFORMANCE
+══════════════════════════════════════════════════════════════ -->
+<div class="page-content">
+
+  <!-- ── SECTION: CARBON PERFORMANCE ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Carbon Performance</h2>
+      <span class="section-subtitle">Actual intensity vs. CRREM pathway — current year</span>
+    </div>
+
+    <!-- KPI scorecards: Actual | Pathway Target | Gap -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Actual Carbon Intensity</div>
+        <div class="kpi-value kpi-over" id="kpi-actual">—</div>
+        <div class="kpi-unit">kgCO₂/m²/yr</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">2025 Pathway Target</div>
+        <div class="kpi-value" id="kpi-target">—</div>
+        <div class="kpi-unit">kgCO₂/m²/yr</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Gap vs. Pathway</div>
+        <div class="kpi-value kpi-over" id="kpi-gap">—</div>
+        <div class="kpi-unit">kgCO₂/m²/yr</div>
+      </div>
+    </div>
+
+    <!-- Gap bar visual -->
+    <div class="gap-bar-wrapper">
+      <div class="gap-bar-label-row">
+        <span class="gap-label-left">Carbon Gap Indicator</span>
+        <span class="gap-label-right">Pathway compliance band</span>
+      </div>
+      <div class="gap-bar-track">
+        <div class="gap-bar-fill fill-stranded" id="gap-bar-fill" style="width:60%"></div>
+      </div>
+      <div class="gap-bar-annotation ann-stranded" id="gap-bar-annotation">
+        — above pathway target
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION: FUEL MIX & EMISSION FACTORS ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Fuel Mix &amp; Emission Factors</h2>
+      <span class="section-subtitle">Energy source breakdown used in carbon calculations</span>
+    </div>
+
+    <div class="fuel-mix-grid">
+      <div class="fuel-mix-card">
+        <div class="fm-icon">⚡</div>
+        <div class="fm-pct" id="fm-elec-pct">—</div>
+        <div class="fm-label">Electricity</div>
+        <div class="fm-ef" id="fm-elec-ef">— kgCO₂/kWh</div>
+      </div>
+      <div class="fuel-mix-card">
+        <div class="fm-icon">🔥</div>
+        <div class="fm-pct" id="fm-gas-pct">—</div>
+        <div class="fm-label">Natural Gas</div>
+        <div class="fm-ef" id="fm-gas-ef">— kgCO₂/kWh</div>
+      </div>
+      <div class="fuel-mix-card">
+        <div class="fm-icon">♨️</div>
+        <div class="fm-pct" id="fm-other-pct">—</div>
+        <div class="fm-label">Other / District</div>
+        <div class="fm-ef" id="fm-other-ef">—</div>
+      </div>
+    </div>
+
+    <div class="confidence-note" style="margin-top:4mm" id="ef-source-note">
+      <strong>Emission factor source:</strong> <span id="ef-source">—</span>
+    </div>
+  </div>
+
+</div><!-- /page-content -->
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 3: PATHWAY TABLE
+══════════════════════════════════════════════════════════════ -->
+<div class="page-content break-before">
+
+  <!-- ── SECTION: DECARBONIZATION PATHWAY ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Decarbonization Pathway</h2>
+      <span class="section-subtitle">Year-by-year trajectory vs. CRREM targets</span>
+    </div>
+
+    <!-- Pathway milestone strip -->
+    <div class="cover-meta-grid" style="margin-bottom:5mm">
+      <div class="cover-meta-item">
+        <div class="meta-label">2030 Target</div>
+        <div class="meta-value" id="pw-2030">—</div>
+        <div style="font-size:7.5pt;color:var(--color-text-muted);margin-top:0.5mm">kgCO₂/m²/yr</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="meta-label">2035 Target</div>
+        <div class="meta-value" id="pw-2035">—</div>
+        <div style="font-size:7.5pt;color:var(--color-text-muted);margin-top:0.5mm">kgCO₂/m²/yr</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="meta-label">2040 Target</div>
+        <div class="meta-value" id="pw-2040">—</div>
+        <div style="font-size:7.5pt;color:var(--color-text-muted);margin-top:0.5mm">kgCO₂/m²/yr</div>
+      </div>
+      <div class="cover-meta-item" style="border-top-color: var(--color-primary)">
+        <div class="meta-label">2050 Net-Zero Target</div>
+        <div class="meta-value" id="pw-2050" style="color:var(--color-primary)">—</div>
+        <div style="font-size:7.5pt;color:var(--color-text-muted);margin-top:0.5mm">kgCO₂/m²/yr</div>
+      </div>
+      <div class="cover-meta-item">
+      </div>
+      <div class="cover-meta-item">
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:12%">Year</th>
+          <th class="align-right" style="width:22%">Actual (kgCO₂/m²)</th>
+          <th class="align-right" style="width:22%">Pathway Target</th>
+          <th class="align-right" style="width:22%">Gap</th>
+          <th class="align-center" style="width:22%">Status</th>
+        </tr>
+      </thead>
+      <tbody id="trajectory-tbody">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+
+    <div class="confidence-note" style="margin-top:4mm">
+      <strong>Methodology:</strong> CRREM Tool v2.0 pathway targets for the applicable property type and country. Actual and projected values based on supplied utility data and assumed business-as-usual trajectory unless retrofits are implemented. Gap = Actual − Pathway Target; positive values indicate stranding.
+    </div>
+  </div>
+
+</div><!-- /page-content -->
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 4: RECOMMENDATIONS
+══════════════════════════════════════════════════════════════ -->
+<div class="page-content break-before">
+
+  <!-- ── SECTION: RECOMMENDATIONS ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Decarbonization Recommendations</h2>
+      <span class="section-subtitle">Ranked by carbon impact — prioritized action plan</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th class="align-center" style="width:6%">#</th>
+          <th style="width:12%">Priority</th>
+          <th style="width:46%">Measure &amp; Action</th>
+          <th class="align-right" style="width:14%">Carbon Reduction</th>
+          <th class="align-right" style="width:22%">CapEx Range</th>
+        </tr>
+      </thead>
+      <tbody id="recommendations-tbody">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+
+    <div class="confidence-note" style="margin-top:4mm">
+      <strong>Note:</strong> Carbon reduction percentages represent estimated whole-building impact assuming full implementation. CapEx ranges are indicative order-of-magnitude estimates; detailed engineering assessment required before procurement. Measures are not mutually exclusive — combined implementation yields compounding benefits.
+    </div>
+  </div>
+
+</div><!-- /page-content -->
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 5: TCFD / CLIMATE RISK CONTEXT (conditional)
+══════════════════════════════════════════════════════════════ -->
+<div class="page-content break-before" id="page-tcfd" style="display:none">
+
+  <!-- ── SECTION: TCFD CLIMATE RISK ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">TCFD Climate Risk Context</h2>
+      <span class="section-subtitle">Physical &amp; transition risk — scenario analysis summary</span>
+    </div>
+
+    <div class="tcfd-grid">
+      <div class="tcfd-card">
+        <div class="tcfd-card-label">Physical Risk Score</div>
+        <div class="tcfd-card-value risk-level-medium" id="tcfd-physical-risk-value">—</div>
+        <div class="tcfd-card-detail">Exposure to acute and chronic physical climate hazards including heat stress, flooding, and extreme weather events over the investment horizon.</div>
+      </div>
+      <div class="tcfd-card">
+        <div class="tcfd-card-label">Transition Risk Level</div>
+        <div class="tcfd-card-value risk-level-high" id="tcfd-transition-risk-value">—</div>
+        <div class="tcfd-card-detail">Policy, regulatory, and market transition risks including carbon pricing, building performance standards, and potential for value impairment on exit.</div>
+      </div>
+    </div>
+
+    <div class="scenario-table-wrapper">
+      <div class="section-header" style="margin-top:3mm">
+        <div class="section-accent" style="background:var(--color-text-muted)"></div>
+        <h3 class="section-title" style="font-size:11pt">Climate Scenario Analysis</h3>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:20%">Scenario</th>
+            <th style="width:80%">Impact Assessment</th>
+          </tr>
+        </thead>
+        <tbody id="scenario-tbody">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="confidence-note" style="margin-top:6mm">
+      <strong>Disclosure note:</strong> This TCFD context is prepared for internal asset management use and does not constitute a formal TCFD disclosure. Scenario analysis is qualitative and based on CRREM pathways, IPCC AR6, and publicly available policy data. A formal TCFD disclosure should be prepared in consultation with your ESG and legal advisors.
+    </div>
+  </div>
+
+</div><!-- /page-tcfd -->
+
+
+<!-- Paged.js — loaded LAST so PagedConfig.before fires first.
+     Pinned to 0.4.3; matches rsra/layout.html version. -->
+<script
+  src="https://unpkg.com/pagedjs@0.4.3/dist/paged.polyfill.js"
+  integrity="sha384-JkjBt3FPbcQ3WBc3qp+maUIw8YLoZxNNj8H+tn73mljkC1ba8aEPWlgwfCRPpAxV"
+  crossorigin="anonymous"></script>
+
+</body>
+</html>

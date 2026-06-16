@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Decarbonization Roadmap Report",
+  "description": "Data schema for the decarb-roadmap report template (matches Audette decarb-roadmap data shape)",
+  "type": "object",
+  "required": ["building", "plan_summary", "measures", "prepared_by", "prepared_for", "report_date"],
+  "properties": {
+    "building": {
+      "type": "object",
+      "required": ["name", "address", "type", "gfa_sqft", "baseline_emissions_tco2e"],
+      "properties": {
+        "name":                      { "type": "string", "description": "Building / asset name" },
+        "address":                   { "type": "string", "description": "Full street address" },
+        "type":                      { "type": "string", "description": "Building type (e.g. office, multifamily, retail)" },
+        "gfa_sqft":                  { "type": "number", "description": "Gross floor area in square feet" },
+        "year_built":                { "type": "integer", "description": "Year of original construction" },
+        "baseline_eui_kbtu_sqft":    { "type": "number", "description": "Baseline energy use intensity in kBtu/sqft/yr" },
+        "baseline_emissions_tco2e":  { "type": "number", "description": "Baseline annual GHG emissions in tCO2e" },
+        "baseline_cost_usd":         { "type": "number", "description": "Baseline annual energy cost in USD" }
+      }
+    },
+    "plan_summary": {
+      "type": "object",
+      "required": ["total_capex", "total_annual_savings", "total_carbon_reduction_tco2e"],
+      "properties": {
+        "total_capex":                  { "type": "number", "description": "Total capital expenditure across all measures (USD)" },
+        "total_annual_savings":         { "type": "number", "description": "Total annual energy cost savings at full implementation (USD/yr)" },
+        "npv":                          { "type": "number", "description": "Net present value of the full measure package (USD)" },
+        "irr":                          { "type": "number", "description": "Internal rate of return as a decimal (e.g. 0.12 = 12%)" },
+        "simple_payback_years":         { "type": "number", "description": "Simple payback period in years" },
+        "total_carbon_reduction_tco2e": { "type": "number", "description": "Total cumulative carbon reduction over plan horizon (tCO2e)" },
+        "net_zero_year":                {
+          "oneOf": [
+            { "type": "integer", "description": "Calendar year asset reaches net-zero emissions" },
+            { "type": "null", "description": "Null if net-zero is not achievable within plan horizon" }
+          ]
+        }
+      }
+    },
+    "measures": {
+      "type": "array",
+      "description": "Individual carbon reduction measures, sorted by implementation_year",
+      "items": {
+        "type": "object",
+        "required": ["name", "capex", "annual_savings_usd", "payback_years", "carbon_reduction_tco2e", "implementation_year", "category"],
+        "properties": {
+          "name":                    { "type": "string", "description": "Measure name (e.g. 'LED Lighting Retrofit')" },
+          "capex":                   { "type": "number", "description": "Capital cost in USD" },
+          "annual_savings_usd":      { "type": "number", "description": "Annual energy cost savings in USD" },
+          "payback_years":           { "type": "number", "description": "Simple payback period in years" },
+          "carbon_reduction_tco2e":  { "type": "number", "description": "Annual carbon reduction in tCO2e" },
+          "implementation_year":     { "type": "integer", "description": "Calendar year of implementation" },
+          "category": {
+            "type": "string",
+            "enum": ["lighting", "hvac", "envelope", "renewables", "controls", "dhw", "ev-charging", "other"],
+            "description": "Measure category"
+          }
+        }
+      }
+    },
+    "financial_projection": {
+      "type": "array",
+      "description": "Year-by-year cumulative cashflow projection",
+      "items": {
+        "type": "object",
+        "required": ["year", "capex_spent", "annual_savings", "cumulative_net"],
+        "properties": {
+          "year":           { "type": "integer", "description": "Calendar year" },
+          "capex_spent":    { "type": "number", "description": "CapEx deployed in this year (USD)" },
+          "annual_savings": { "type": "number", "description": "Annual savings achieved in this year (USD)" },
+          "cumulative_net": { "type": "number", "description": "Cumulative net cash position (negative = unrecovered investment)" }
+        }
+      }
+    },
+    "retrofit_trajectory": {
+      "type": "array",
+      "description": "Emissions trajectory: baseline vs retrofit vs decarbonization pathway",
+      "items": {
+        "type": "object",
+        "required": ["year", "baseline_emissions_tco2e", "retrofit_emissions_tco2e"],
+        "properties": {
+          "year":                       { "type": "integer", "description": "Calendar year" },
+          "baseline_emissions_tco2e":   { "type": "number", "description": "Business-as-usual emissions (tCO2e)" },
+          "retrofit_emissions_tco2e":   { "type": "number", "description": "Projected emissions with measures implemented (tCO2e)" },
+          "pathway_target_tco2e":       { "type": "number", "description": "Science-based or regulatory pathway target (tCO2e); optional" }
+        }
+      }
+    },
+    "other_opportunities": {
+      "type": "array",
+      "description": "Additional measures from run_measure_design_analysis not included in primary plan",
+      "items": {
+        "type": "object",
+        "required": ["name", "description"],
+        "properties": {
+          "name":               { "type": "string", "description": "Opportunity name" },
+          "description":        { "type": "string", "description": "Brief description and rationale" },
+          "estimated_capex":    { "type": "number", "description": "Rough capital cost estimate (USD); optional" },
+          "estimated_savings":  { "type": "number", "description": "Rough annual savings estimate (USD/yr); optional" }
+        }
+      }
+    },
+    "prepared_by":  { "type": "string", "description": "Name of the person or organization preparing this report" },
+    "prepared_for": { "type": "string", "description": "Name of the intended recipient / asset manager / investor" },
+    "report_date":  { "type": "string", "format": "date", "description": "Report preparation date (YYYY-MM-DD)" }
+  }
+}

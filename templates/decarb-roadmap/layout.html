@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decarbonization Roadmap</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─────────────────────────────────────────────
+       BRAND VARIABLES
+    ───────────────────────────────────────────── */
+    :root {
+      --color-primary:    var(--brand-color-primary,   #0F1923);
+      --color-secondary:  var(--brand-color-secondary, #2D6A4F);
+      --color-accent:     var(--brand-color-accent,    #F0F4F8);
+      --color-highlight:  var(--brand-color-highlight, #52B788);
+      --color-text:       var(--brand-color-text,      #0F1923);
+      --color-text-muted: var(--brand-color-muted,     #6B7280);
+      --color-border:     var(--brand-color-border,    #E5E7EB);
+      --font-heading:     var(--brand-font-heading,    'Inter', system-ui, sans-serif);
+      --font-body:        var(--brand-font-body,       'Inter', system-ui, sans-serif);
+      --font-mono:        var(--brand-font-mono,       'JetBrains Mono', monospace);
+
+      /* Measure category colors */
+      --cat-lighting:    #FEF3C7;
+      --cat-hvac:        #DBEAFE;
+      --cat-envelope:    #F3E8FF;
+      --cat-renewables:  #D1FAE5;
+      --cat-controls:    #FEE2E2;
+      --cat-dhw:         #E0F2FE;
+      --cat-ev:          #FCE7F3;
+      --cat-other:       #F3F4F6;
+
+      /* Cashflow colors */
+      --cashflow-negative: #FEE2E2;
+      --cashflow-positive: #D1FAE5;
+
+      --page-margin-top:    18mm;
+      --page-margin-side:   16mm;
+      --page-margin-bottom: 20mm;
+    }
+
+    /* ─────────────────────────────────────────────
+       PAGED.JS PAGE RULES
+    ───────────────────────────────────────────── */
+    @page {
+      size: letter;
+      margin: var(--page-margin-top) var(--page-margin-side) var(--page-margin-bottom);
+
+      @bottom-center {
+        content: "Confidential — " string(orgName);
+        font-family: var(--font-body);
+        font-size: 8pt;
+        color: var(--color-text-muted);
+        text-align: center;
+      }
+      @bottom-right {
+        content: counter(page);
+        font-family: var(--font-body);
+        font-size: 8pt;
+        color: var(--color-text-muted);
+        text-align: right;
+      }
+    }
+
+    @page cover {
+      margin: 0;
+      @bottom-left   { content: none; }
+      @bottom-center { content: none; }
+      @bottom-right  { content: none; }
+    }
+
+    @page content {
+      @top-left {
+        content: string(buildingName);
+        font-family: var(--font-body);
+        font-size: 8pt;
+        color: var(--color-text-muted);
+        padding-top: 4mm;
+      }
+      @top-right {
+        content: "Decarbonization Roadmap";
+        font-family: var(--font-body);
+        font-size: 8pt;
+        color: var(--color-text-muted);
+        padding-top: 4mm;
+      }
+    }
+
+    /* ─────────────────────────────────────────────
+       RESET & BASE
+    ───────────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      font-family: var(--font-body);
+      font-size: 10pt;
+      color: var(--color-text);
+      background: #fff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ─────────────────────────────────────────────
+       COVER PAGE
+    ───────────────────────────────────────────── */
+    .page-cover {
+      page: cover;
+      break-after: page;
+      width: 100%;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: 1fr auto;
+    }
+
+    .cover-header {
+      background: var(--color-primary);
+      color: #fff;
+      padding: 22mm 18mm 18mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 72mm;
+    }
+
+    .cover-header .report-label {
+      font-size: 9pt;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-highlight);
+      margin-bottom: 6mm;
+    }
+
+    .cover-header .building-name {
+      font-size: 28pt;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 3mm;
+      string-set: buildingName content();
+    }
+
+    .cover-header .building-address {
+      font-size: 12pt;
+      font-weight: 300;
+      color: rgba(255,255,255,0.70);
+    }
+
+    .cover-body {
+      padding: 10mm 18mm 0;
+      background: #fff;
+    }
+
+    /* Cover 4-cell highlights */
+    .cover-highlights {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5mm;
+      margin-bottom: 8mm;
+    }
+
+    .highlight-cell {
+      border-top: 3px solid var(--color-highlight);
+      padding-top: 3mm;
+    }
+
+    .highlight-cell .hl-label {
+      font-size: 7.5pt;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 1.5mm;
+    }
+
+    .highlight-cell .hl-value {
+      font-size: 16pt;
+      font-weight: 700;
+      color: var(--color-primary);
+      line-height: 1;
+      letter-spacing: -0.01em;
+    }
+
+    .highlight-cell .hl-sub {
+      font-size: 8pt;
+      color: var(--color-text-muted);
+      margin-top: 1mm;
+    }
+
+    .cover-footer {
+      padding: 5mm 18mm 8mm;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--color-border);
+      background: #fff;
+    }
+
+    .cover-footer .org-logo {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+    }
+
+    .cover-footer .logo-mark {
+      width: 22px;
+      height: 22px;
+      background: var(--color-primary);
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cover-footer .logo-mark svg {
+      width: 14px;
+      height: 14px;
+      fill: #fff;
+    }
+
+    .cover-footer .org-name {
+      font-size: 9pt;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .cover-footer .cover-footer-right { text-align: right; }
+    .cover-footer .confidential-label {
+      font-size: 7.5pt;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .cover-footer .report-date {
+      font-size: 8pt;
+      color: var(--color-text-muted);
+      margin-top: 0.5mm;
+    }
+
+    /* ─────────────────────────────────────────────
+       CONTENT PAGES
+    ───────────────────────────────────────────── */
+    .page-content { page: content; }
+
+    /* ─────────────────────────────────────────────
+       SECTION STRUCTURE
+    ───────────────────────────────────────────── */
+    .section {
+      break-inside: avoid-page;
+      margin-bottom: 9mm;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      margin-bottom: 4mm;
+      padding-bottom: 2.5mm;
+      border-bottom: 1.5px solid var(--color-border);
+    }
+
+    .section-accent {
+      width: 3px;
+      height: 18px;
+      background: var(--color-secondary);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-family: var(--font-heading);
+      font-size: 14pt;
+      font-weight: 700;
+      color: var(--color-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .section-subtitle {
+      font-size: 8.5pt;
+      color: var(--color-text-muted);
+      margin-left: auto;
+    }
+
+    /* ─────────────────────────────────────────────
+       TABLES
+    ───────────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9pt;
+    }
+
+    thead th {
+      background: var(--color-primary);
+      color: #fff;
+      font-weight: 600;
+      font-size: 8pt;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 3mm 4mm;
+      text-align: left;
+    }
+
+    thead th:first-child { border-radius: 2px 0 0 0; }
+    thead th:last-child  { border-radius: 0 2px 0 0; }
+
+    tbody tr:nth-child(odd)  { background: var(--color-accent); }
+    tbody tr:nth-child(even) { background: #fff; }
+
+    tbody td {
+      padding: 2.5mm 4mm;
+      vertical-align: middle;
+      line-height: 1.4;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    tbody tr.row-total td {
+      background: var(--color-primary);
+      color: #fff;
+      font-weight: 700;
+      font-size: 9pt;
+      border-top: none;
+      border-bottom: none;
+    }
+
+    td.align-right, th.align-right { text-align: right; }
+    td.align-center, th.align-center { text-align: center; }
+    td.text-muted { color: var(--color-text-muted); font-size: 8.5pt; }
+    td.mono       { font-family: var(--font-mono); font-size: 8.5pt; }
+
+    /* Cashflow coloring */
+    td.cash-neg { color: #991B1B; font-family: var(--font-mono); font-size: 8.5pt; }
+    td.cash-pos { color: #065F46; font-family: var(--font-mono); font-size: 8.5pt; }
+
+    /* ─────────────────────────────────────────────
+       PAGE 2: HIGHLIGHTS GRID (6-cell)
+    ───────────────────────────────────────────── */
+    .highlights-6 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5mm;
+      margin-bottom: 6mm;
+    }
+
+    .highlight-6-cell {
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      padding: 4mm 5mm;
+    }
+
+    .highlight-6-cell .h6-label {
+      font-size: 7.5pt;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 2mm;
+    }
+
+    .highlight-6-cell .h6-value {
+      font-size: 22pt;
+      font-weight: 700;
+      color: var(--color-primary);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .highlight-6-cell .h6-unit {
+      font-size: 9pt;
+      font-weight: 400;
+      color: var(--color-text-muted);
+      margin-left: 1mm;
+    }
+
+    .highlight-6-cell .h6-sub {
+      font-size: 8pt;
+      color: var(--color-secondary);
+      font-weight: 500;
+      margin-top: 1.5mm;
+    }
+
+    /* ─────────────────────────────────────────────
+       PAGE 4: BASELINE ASSESSMENT
+    ───────────────────────────────────────────── */
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 38mm 1fr;
+      row-gap: 0;
+    }
+
+    .profile-row { display: contents; }
+
+    .profile-row .profile-key,
+    .profile-row .profile-value {
+      padding: 2.5mm 4mm;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: top;
+      font-size: 9pt;
+      line-height: 1.45;
+    }
+
+    .profile-row:last-child .profile-key,
+    .profile-row:last-child .profile-value { border-bottom: none; }
+
+    .profile-row:nth-child(odd) .profile-key,
+    .profile-row:nth-child(odd) .profile-value { background: var(--color-accent); }
+
+    .profile-key {
+      font-weight: 600;
+      font-size: 8.5pt;
+      color: var(--color-primary);
+      white-space: nowrap;
+    }
+
+    /* ─────────────────────────────────────────────
+       PAGE 5: RECOMMENDED MEASURES
+    ───────────────────────────────────────────── */
+    .category-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 1.5mm;
+      vertical-align: middle;
+    }
+
+    /* ─────────────────────────────────────────────
+       PAGE 6: GANTT CHART (CSS)
+    ───────────────────────────────────────────── */
+    .gantt-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.5pt;
+    }
+
+    .gantt-table .gantt-label-col {
+      width: 38%;
+      font-weight: 500;
+      padding: 2mm 3mm;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: middle;
+      background: var(--color-accent);
+    }
+
+    .gantt-table .gantt-bar-col {
+      padding: 2mm 0;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: middle;
+      position: relative;
+    }
+
+    .gantt-track {
+      background: #F3F4F6;
+      border-radius: 2px;
+      height: 8px;
+      position: relative;
+      overflow: visible;
+    }
+
+    .gantt-bar {
+      height: 8px;
+      border-radius: 2px;
+      background: var(--color-secondary);
+      position: absolute;
+      top: 0;
+    }
+
+    .gantt-year-headers {
+      display: flex;
+      gap: 0;
+      margin-bottom: 2mm;
+      margin-left: 38%;
+    }
+
+    .gantt-year-header {
+      font-size: 7.5pt;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+
+    /* ─────────────────────────────────────────────
+       PAGE 8: EMISSIONS TRAJECTORY
+    ───────────────────────────────────────────── */
+    .emissions-legend {
+      display: flex;
+      gap: 6mm;
+      margin-bottom: 4mm;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 1.5mm;
+      font-size: 8.5pt;
+      color: var(--color-text-muted);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .legend-baseline { background: #EF4444; }
+    .legend-retrofit { background: var(--color-secondary); }
+    .legend-pathway  { background: #F59E0B; }
+
+    /* ─────────────────────────────────────────────
+       UTILITY
+    ───────────────────────────────────────────── */
+    .break-before { break-before: page; }
+
+    #org-name-anchor {
+      string-set: orgName content();
+      display: none;
+    }
+
+    .confidence-note {
+      margin-top: 6mm;
+      padding: 3mm 4mm;
+      background: var(--color-accent);
+      border: 1px solid var(--color-border);
+      border-radius: 3px;
+      font-size: 8.5pt;
+      color: var(--color-text-muted);
+      line-height: 1.45;
+    }
+
+    .confidence-note strong { color: var(--color-text); font-weight: 600; }
+
+    .narrative-block {
+      font-size: 10pt;
+      line-height: 1.65;
+      color: var(--color-text);
+      padding: 4mm 5mm;
+      border-left: 3px solid var(--color-highlight);
+      background: #F9FAFB;
+      border-radius: 0 4px 4px 0;
+    }
+  </style>
+</head>
+<body>
+
+<script id="report-data" type="application/json">
+{
+  "building": {
+    "name": "Commerce Tower",
+    "address": "1200 Bay Street, Toronto, ON M5J 2R9",
+    "type": "office",
+    "gfa_sqft": 185000,
+    "year_built": 1991,
+    "baseline_eui_kbtu_sqft": 78.4,
+    "baseline_emissions_tco2e": 1840,
+    "baseline_cost_usd": 420000
+  },
+  "plan_summary": {
+    "total_capex": 2850000,
+    "total_annual_savings": 198000,
+    "npv": 1240000,
+    "irr": 0.14,
+    "simple_payback_years": 14.4,
+    "total_carbon_reduction_tco2e": 9200,
+    "net_zero_year": 2040
+  },
+  "measures": [
+    { "name": "LED Lighting Retrofit — Floors 1–22", "capex": 280000, "annual_savings_usd": 38000, "payback_years": 7.4, "carbon_reduction_tco2e": 120, "implementation_year": 2026, "category": "lighting" },
+    { "name": "Building Automation System Upgrade", "capex": 320000, "annual_savings_usd": 52000, "payback_years": 6.2, "carbon_reduction_tco2e": 210, "implementation_year": 2026, "category": "controls" },
+    { "name": "Variable Frequency Drives — HVAC Pumps & Fans", "capex": 180000, "annual_savings_usd": 29000, "payback_years": 6.2, "carbon_reduction_tco2e": 95, "implementation_year": 2027, "category": "hvac" },
+    { "name": "Rooftop Solar PV (400 kW)", "capex": 680000, "annual_savings_usd": 48000, "payback_years": 14.2, "carbon_reduction_tco2e": 220, "implementation_year": 2027, "category": "renewables" },
+    { "name": "High-Performance Chiller Replacement", "capex": 740000, "annual_savings_usd": 61000, "payback_years": 12.1, "carbon_reduction_tco2e": 280, "implementation_year": 2028, "category": "hvac" },
+    { "name": "Curtain Wall Window Film & Weatherstripping", "capex": 420000, "annual_savings_usd": 34000, "payback_years": 12.4, "carbon_reduction_tco2e": 140, "implementation_year": 2029, "category": "envelope" },
+    { "name": "Heat Pump Hot Water System", "capex": 230000, "annual_savings_usd": 28000, "payback_years": 8.2, "carbon_reduction_tco2e": 95, "implementation_year": 2030, "category": "dhw" }
+  ],
+  "financial_projection": [
+    { "year": 2026, "capex_spent": 600000,  "annual_savings": 90000,  "cumulative_net": -510000 },
+    { "year": 2027, "capex_spent": 860000,  "annual_savings": 167000, "cumulative_net": -1203000 },
+    { "year": 2028, "capex_spent": 740000,  "annual_savings": 228000, "cumulative_net": -1715000 },
+    { "year": 2029, "capex_spent": 420000,  "annual_savings": 262000, "cumulative_net": -1873000 },
+    { "year": 2030, "capex_spent": 230000,  "annual_savings": 290000, "cumulative_net": -1813000 },
+    { "year": 2031, "capex_spent": 0,       "annual_savings": 298000, "cumulative_net": -1515000 },
+    { "year": 2032, "capex_spent": 0,       "annual_savings": 298000, "cumulative_net": -1217000 },
+    { "year": 2033, "capex_spent": 0,       "annual_savings": 298000, "cumulative_net": -919000  },
+    { "year": 2034, "capex_spent": 0,       "annual_savings": 298000, "cumulative_net": -621000  },
+    { "year": 2035, "capex_spent": 0,       "annual_savings": 298000, "cumulative_net": -323000  }
+  ],
+  "retrofit_trajectory": [
+    { "year": 2025, "baseline_emissions_tco2e": 1840, "retrofit_emissions_tco2e": 1840, "pathway_target_tco2e": 1840 },
+    { "year": 2026, "baseline_emissions_tco2e": 1840, "retrofit_emissions_tco2e": 1415, "pathway_target_tco2e": 1650 },
+    { "year": 2028, "baseline_emissions_tco2e": 1840, "retrofit_emissions_tco2e": 1040, "pathway_target_tco2e": 1380 },
+    { "year": 2030, "baseline_emissions_tco2e": 1840, "retrofit_emissions_tco2e":  755, "pathway_target_tco2e": 1100 },
+    { "year": 2035, "baseline_emissions_tco2e": 1840, "retrofit_emissions_tco2e":  420, "pathway_target_tco2e":  720 },
+    { "year": 2040, "baseline_emissions_tco2e": 1840, "retrofit_emissions_tco2e":    0, "pathway_target_tco2e":  350 }
+  ],
+  "other_opportunities": [
+    {
+      "name": "Green Power Purchase Agreement (PPA)",
+      "description": "100% renewable electricity via a 10-year PPA with a regional wind operator. Eliminates Scope 2 market-based emissions. No CapEx; slight premium over grid rate (~5%) reduces in a net savings scenario post-2028.",
+      "estimated_capex": 0,
+      "estimated_savings": 22000
+    },
+    {
+      "name": "EV Charging Infrastructure (20 stalls, Parkade L1)",
+      "description": "Level-2 EV charging for tenant/visitor use. Qualifies for federal ZEVIP incentive (up to 50% of eligible costs). Amenity value supports lease renewal and premium rent positioning.",
+      "estimated_capex": 140000,
+      "estimated_savings": 8000
+    },
+    {
+      "name": "On-Site Battery Energy Storage System (BESS)",
+      "description": "400 kWh BESS paired with rooftop solar to shift peak demand and reduce peak demand charges. Study required to confirm utility interconnection rules and demand charge structure.",
+      "estimated_capex": 520000,
+      "estimated_savings": 31000
+    }
+  ],
+  "executive_summary": "Commerce Tower's decarbonization roadmap delivers a 59% reduction in operational emissions by 2035 through a phased $2.85M capital program. Quick-win lighting and controls upgrades in 2026 generate immediate payback, while mechanical system replacements through 2030 position the asset for net-zero achievement by 2040. The plan yields a 14% IRR on a fully-loaded basis with $198K in annual savings at steady state.",
+  "prepared_by":  "Audette Sustainability Intelligence",
+  "prepared_for": "Clearwater Asset Management",
+  "report_date":  "2026-06-16"
+}
+</script>
+
+<script>
+  window.PagedConfig = {
+    auto: true,
+    before: function() { return populateReport(); }
+  };
+
+  function populateReport() {
+    var dataEl = document.getElementById('report-data');
+    if (!dataEl) return;
+    var data;
+    try { data = JSON.parse(dataEl.textContent); } catch(e) { console.error('Decarb: JSON parse error', e); return; }
+
+    var bldg    = data.building           || {};
+    var summary = data.plan_summary       || {};
+    var measures= data.measures           || [];
+    var finProj = data.financial_projection || [];
+    var traj    = data.retrofit_trajectory || [];
+    var otherOpp= data.other_opportunities || [];
+
+    /* ── Helpers ── */
+    function safe(v)    { return (v !== undefined && v !== null && v !== '') ? String(v) : '—'; }
+    function num(v, dp) { return typeof v === 'number' ? v.toLocaleString('en-US', { minimumFractionDigits: dp||0, maximumFractionDigits: dp||0 }) : '—'; }
+    function curr(v)    {
+      if (typeof v !== 'number') return '—';
+      if (Math.abs(v) >= 1000000) return (v < 0 ? '-' : '') + '$' + (Math.abs(v)/1000000).toFixed(2).replace(/\.?0+$/, '') + 'M';
+      if (Math.abs(v) >= 1000)   return (v < 0 ? '-' : '') + '$' + Math.abs(v).toLocaleString('en-US');
+      return '$' + v.toFixed(0);
+    }
+    function pct(v, dp) { return typeof v === 'number' ? v.toFixed(dp || 0) + '%' : '—'; }
+    function setText(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+    function setHtml(id, val) { var el = document.getElementById(id); if (el) el.innerHTML = val; }
+
+    var CAT_COLORS = {
+      lighting:   '#F59E0B',
+      hvac:       '#3B82F6',
+      envelope:   '#8B5CF6',
+      renewables: '#10B981',
+      controls:   '#EF4444',
+      dhw:        '#06B6D4',
+      'ev-charging': '#EC4899',
+      other:      '#9CA3AF'
+    };
+
+    function catDot(cat) {
+      var color = CAT_COLORS[cat] || CAT_COLORS.other;
+      return '<span class="category-dot" style="background:' + color + '"></span>';
+    }
+
+    /* ── Named string anchors ── */
+    setText('org-name-anchor', safe(data.prepared_for || data.prepared_by || 'Confidential'));
+
+    /* ── COVER ── */
+    setText('cover-building-name', safe(bldg.name));
+    setText('cover-building-address', safe(bldg.address));
+    setText('cover-hl-capex',    curr(summary.total_capex));
+    setText('cover-hl-irr',      typeof summary.irr === 'number' ? pct(summary.irr * 100, 1) : '—');
+    setText('cover-hl-carbon',   typeof summary.total_carbon_reduction_tco2e === 'number' ? num(summary.total_carbon_reduction_tco2e) + ' tCO₂e' : '—');
+    setText('cover-hl-nz',       summary.net_zero_year ? String(summary.net_zero_year) : 'Not in range');
+    setText('cover-meta-for',    safe(data.prepared_for));
+    setText('cover-meta-by',     safe(data.prepared_by));
+    setText('cover-meta-date',   safe(data.report_date));
+    setText('cover-meta-type',   safe(bldg.type ? bldg.type.charAt(0).toUpperCase() + bldg.type.slice(1) : ''));
+    setText('cover-meta-gfa',    typeof bldg.gfa_sqft === 'number' ? num(bldg.gfa_sqft) + ' sqft' : '—');
+    setText('cover-meta-built',  bldg.year_built ? String(bldg.year_built) : '—');
+
+    /* ── PAGE 2: HIGHLIGHTS GRID ── */
+    setText('h6-capex',    curr(summary.total_capex));
+    setText('h6-savings',  typeof summary.total_annual_savings === 'number' ? curr(summary.total_annual_savings) + '/yr' : '—');
+    setText('h6-payback',  typeof summary.simple_payback_years === 'number' ? summary.simple_payback_years.toFixed(1) + ' yrs' : '—');
+    setText('h6-irr',      typeof summary.irr === 'number' ? pct(summary.irr * 100, 1) : '—');
+    setText('h6-carbon',   typeof summary.total_carbon_reduction_tco2e === 'number' ? num(summary.total_carbon_reduction_tco2e) + ' tCO₂e' : '—');
+    setText('h6-nz',       summary.net_zero_year ? String(summary.net_zero_year) : 'Not in range');
+    setText('h6-npv',      curr(summary.npv));
+
+    /* ── PAGE 3: EXECUTIVE SUMMARY ── */
+    setText('exec-summary-text', safe(data.executive_summary || 'Executive summary not provided.'));
+
+    /* ── PAGE 4: BASELINE ASSESSMENT ── */
+    setText('bl-name',      safe(bldg.name));
+    setText('bl-address',   safe(bldg.address));
+    setText('bl-type',      safe(bldg.type ? bldg.type.charAt(0).toUpperCase() + bldg.type.slice(1) : ''));
+    setText('bl-gfa',       typeof bldg.gfa_sqft === 'number' ? num(bldg.gfa_sqft) + ' sqft' : '—');
+    setText('bl-built',     bldg.year_built ? String(bldg.year_built) : '—');
+    setText('bl-eui',       typeof bldg.baseline_eui_kbtu_sqft === 'number' ? num(bldg.baseline_eui_kbtu_sqft, 1) + ' kBtu/sqft/yr' : '—');
+    setText('bl-emissions', typeof bldg.baseline_emissions_tco2e === 'number' ? num(bldg.baseline_emissions_tco2e) + ' tCO₂e/yr' : '—');
+    setText('bl-cost',      curr(bldg.baseline_cost_usd) + (bldg.baseline_cost_usd ? '/yr' : ''));
+
+    /* ── PAGE 5: RECOMMENDED MEASURES ── */
+    var measTbody = document.getElementById('measures-tbody');
+    if (measTbody) {
+      /* Sort by implementation_year, then by capex desc */
+      var sorted = measures.slice().sort(function(a,b){
+        if (a.implementation_year !== b.implementation_year) return a.implementation_year - b.implementation_year;
+        return b.capex - a.capex;
+      });
+      var mHtml = '';
+      sorted.forEach(function(m) {
+        mHtml += '<tr>';
+        mHtml += '<td style="white-space:nowrap">' + (m.implementation_year || '—') + '</td>';
+        mHtml += '<td>' + catDot(m.category) + safe(m.name) + '</td>';
+        mHtml += '<td class="align-right mono">' + curr(m.capex) + '</td>';
+        mHtml += '<td class="align-right mono">' + curr(m.annual_savings_usd) + '/yr' + '</td>';
+        mHtml += '<td class="align-right mono">' + (m.payback_years != null ? m.payback_years.toFixed(1) + ' yr' : '—') + '</td>';
+        mHtml += '<td class="align-right mono">' + (m.carbon_reduction_tco2e != null ? num(m.carbon_reduction_tco2e) + ' t' : '—') + '</td>';
+        mHtml += '</tr>';
+      });
+      /* Total row */
+      var totalCapex = measures.reduce(function(s,m){ return s + (m.capex || 0); }, 0);
+      var totalSavings = measures.reduce(function(s,m){ return s + (m.annual_savings_usd || 0); }, 0);
+      var totalCarbon  = measures.reduce(function(s,m){ return s + (m.carbon_reduction_tco2e || 0); }, 0);
+      mHtml += '<tr class="row-total">';
+      mHtml += '<td colspan="2">Total</td>';
+      mHtml += '<td class="align-right">' + curr(totalCapex) + '</td>';
+      mHtml += '<td class="align-right">' + curr(totalSavings) + '/yr</td>';
+      mHtml += '<td></td>';
+      mHtml += '<td class="align-right">' + num(totalCarbon) + ' t</td>';
+      mHtml += '</tr>';
+      measTbody.innerHTML = mHtml;
+    }
+
+    /* ── PAGE 6: GANTT CHART ── */
+    var ganttBody = document.getElementById('gantt-body');
+    var ganttYearHeaders = document.getElementById('gantt-year-headers');
+    if (ganttBody && measures.length > 0) {
+      var years = measures.map(function(m){ return m.implementation_year; }).filter(Boolean);
+      var minYear = Math.min.apply(null, years);
+      var maxYear = Math.max.apply(null, years);
+      var span    = Math.max(maxYear - minYear + 2, 4); /* at least 4 year cols */
+
+      /* Year headers */
+      if (ganttYearHeaders) {
+        var hHtml = '';
+        for (var y = minYear; y <= maxYear + 1; y++) {
+          hHtml += '<div class="gantt-year-header" style="flex:1">' + y + '</div>';
+        }
+        ganttYearHeaders.innerHTML = hHtml;
+        ganttYearHeaders.style.display = 'flex';
+      }
+
+      /* Rows */
+      var gHtml = '';
+      var sorted2 = measures.slice().sort(function(a,b){ return a.implementation_year - b.implementation_year; });
+      sorted2.forEach(function(m) {
+        var yrOffset = m.implementation_year - minYear;
+        var leftPct  = (yrOffset / span) * 100;
+        var widthPct = (1 / span) * 100;
+        var color = CAT_COLORS[m.category] || CAT_COLORS.other;
+        gHtml += '<tr>';
+        gHtml += '<td class="gantt-label-col">' + safe(m.name) + '</td>';
+        gHtml += '<td class="gantt-bar-col"><div class="gantt-track"><div class="gantt-bar" style="left:' + leftPct.toFixed(1) + '%;width:' + widthPct.toFixed(1) + '%;background:' + color + '"></div></div></td>';
+        gHtml += '</tr>';
+      });
+      ganttBody.innerHTML = gHtml;
+    }
+
+    /* ── PAGE 7: FINANCIAL PROJECTION ── */
+    var finTbody = document.getElementById('fin-tbody');
+    if (finTbody && finProj.length > 0) {
+      var fHtml = '';
+      finProj.forEach(function(row) {
+        var netCls = (typeof row.cumulative_net === 'number' && row.cumulative_net >= 0) ? 'cash-pos' : 'cash-neg';
+        fHtml += '<tr>';
+        fHtml += '<td>' + safe(row.year) + '</td>';
+        fHtml += '<td class="align-right mono">' + curr(row.capex_spent) + '</td>';
+        fHtml += '<td class="align-right mono">' + curr(row.annual_savings) + '</td>';
+        fHtml += '<td class="align-right ' + netCls + '">' + curr(row.cumulative_net) + '</td>';
+        fHtml += '</tr>';
+      });
+      finTbody.innerHTML = fHtml;
+    }
+
+    /* ── PAGE 8: EMISSIONS TRAJECTORY ── */
+    var emTbody = document.getElementById('emissions-tbody');
+    if (emTbody && traj.length > 0) {
+      var eHtml = '';
+      traj.forEach(function(row) {
+        eHtml += '<tr>';
+        eHtml += '<td>' + safe(row.year) + '</td>';
+        eHtml += '<td class="align-right mono" style="color:#EF4444">' + num(row.baseline_emissions_tco2e) + '</td>';
+        eHtml += '<td class="align-right mono" style="color:var(--color-secondary)">' + num(row.retrofit_emissions_tco2e) + '</td>';
+        if (row.pathway_target_tco2e !== undefined) {
+          eHtml += '<td class="align-right mono" style="color:#D97706">' + num(row.pathway_target_tco2e) + '</td>';
+        } else {
+          eHtml += '<td class="align-right text-muted">—</td>';
+        }
+        eHtml += '</tr>';
+      });
+      emTbody.innerHTML = eHtml;
+    }
+
+    /* ── PAGE 9: ADDITIONAL OPPORTUNITIES ── */
+    var oppTbody = document.getElementById('opp-tbody');
+    if (oppTbody) {
+      if (otherOpp.length === 0) {
+        oppTbody.innerHTML = '<tr><td colspan="4" class="text-muted" style="text-align:center;padding:5mm">No additional opportunities identified.</td></tr>';
+      } else {
+        var oHtml = '';
+        otherOpp.forEach(function(o) {
+          oHtml += '<tr>';
+          oHtml += '<td style="font-weight:600">' + safe(o.name) + '</td>';
+          oHtml += '<td>' + safe(o.description) + '</td>';
+          oHtml += '<td class="align-right mono">' + (o.estimated_capex !== undefined ? curr(o.estimated_capex) : '—') + '</td>';
+          oHtml += '<td class="align-right mono">' + (o.estimated_savings !== undefined ? curr(o.estimated_savings) + '/yr' : '—') + '</td>';
+          oHtml += '</tr>';
+        });
+        oppTbody.innerHTML = oHtml;
+      }
+    }
+  }
+</script>
+
+<!-- Named string anchor -->
+<span id="org-name-anchor" aria-hidden="true"></span>
+
+<!-- ══════════════════════════════════════
+     PAGE 1: COVER
+════════════════════════════════════════ -->
+<div class="page-cover">
+
+  <div class="cover-header">
+    <div class="report-label">Decarbonization Roadmap</div>
+    <h1 class="building-name" id="cover-building-name">Building Name</h1>
+    <div class="building-address" id="cover-building-address">Address</div>
+  </div>
+
+  <div class="cover-body">
+
+    <!-- 4-cell highlights -->
+    <div class="cover-highlights">
+      <div class="highlight-cell">
+        <div class="hl-label">Total Investment</div>
+        <div class="hl-value" id="cover-hl-capex">—</div>
+        <div class="hl-sub">Full measure package</div>
+      </div>
+      <div class="highlight-cell">
+        <div class="hl-label">IRR</div>
+        <div class="hl-value" id="cover-hl-irr">—</div>
+        <div class="hl-sub">Internal rate of return</div>
+      </div>
+      <div class="highlight-cell">
+        <div class="hl-label">Carbon Reduction</div>
+        <div class="hl-value" id="cover-hl-carbon">—</div>
+        <div class="hl-sub">Cumulative over horizon</div>
+      </div>
+      <div class="highlight-cell">
+        <div class="hl-label">Net Zero Year</div>
+        <div class="hl-value" id="cover-hl-nz">—</div>
+        <div class="hl-sub">Projected achievement</div>
+      </div>
+    </div>
+
+    <!-- Meta grid -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4mm 6mm">
+      <div style="border-top:2px solid var(--color-highlight);padding-top:3mm">
+        <div style="font-size:7.5pt;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-muted);margin-bottom:1mm">Asset Type</div>
+        <div style="font-size:11pt;font-weight:500" id="cover-meta-type">—</div>
+      </div>
+      <div style="border-top:2px solid var(--color-highlight);padding-top:3mm">
+        <div style="font-size:7.5pt;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-muted);margin-bottom:1mm">GFA</div>
+        <div style="font-size:11pt;font-weight:500" id="cover-meta-gfa">—</div>
+      </div>
+      <div style="border-top:2px solid var(--color-highlight);padding-top:3mm">
+        <div style="font-size:7.5pt;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-muted);margin-bottom:1mm">Year Built</div>
+        <div style="font-size:11pt;font-weight:500" id="cover-meta-built">—</div>
+      </div>
+      <div style="border-top:2px solid var(--color-highlight);padding-top:3mm">
+        <div style="font-size:7.5pt;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-muted);margin-bottom:1mm">Prepared For</div>
+        <div style="font-size:11pt;font-weight:500" id="cover-meta-for">—</div>
+      </div>
+      <div style="border-top:2px solid var(--color-highlight);padding-top:3mm">
+        <div style="font-size:7.5pt;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-muted);margin-bottom:1mm">Prepared By</div>
+        <div style="font-size:11pt;font-weight:500" id="cover-meta-by">—</div>
+      </div>
+      <div style="border-top:2px solid var(--color-highlight);padding-top:3mm">
+        <div style="font-size:7.5pt;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-muted);margin-bottom:1mm">Report Date</div>
+        <div style="font-size:11pt;font-weight:500" id="cover-meta-date">—</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="cover-footer">
+    <div class="org-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="0" y="0" width="6" height="6" rx="1"/>
+          <rect x="8" y="0" width="6" height="6" rx="1"/>
+          <rect x="0" y="8" width="6" height="6" rx="1"/>
+          <rect x="8" y="8" width="6" height="6" rx="1"/>
+        </svg>
+      </div>
+      <span class="org-name">Audette · Sustainability Intelligence</span>
+    </div>
+    <div class="cover-footer-right">
+      <div class="confidential-label">Confidential</div>
+    </div>
+  </div>
+
+</div><!-- /page-cover -->
+
+
+<!-- ══════════════════════════════════════
+     PAGE 2: HIGHLIGHTS GRID
+════════════════════════════════════════ -->
+<div class="page-content">
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Plan Highlights</h2>
+      <span class="section-subtitle">Key financial &amp; carbon metrics</span>
+    </div>
+
+    <div class="highlights-6">
+      <div class="highlight-6-cell">
+        <div class="h6-label">Total Investment</div>
+        <div class="h6-value" id="h6-capex">—</div>
+      </div>
+      <div class="highlight-6-cell">
+        <div class="h6-label">Annual Savings</div>
+        <div class="h6-value" id="h6-savings">—</div>
+      </div>
+      <div class="highlight-6-cell">
+        <div class="h6-label">Simple Payback</div>
+        <div class="h6-value" id="h6-payback">—</div>
+      </div>
+      <div class="highlight-6-cell">
+        <div class="h6-label">IRR</div>
+        <div class="h6-value" id="h6-irr">—</div>
+      </div>
+      <div class="highlight-6-cell">
+        <div class="h6-label">Carbon Reduction</div>
+        <div class="h6-value" id="h6-carbon">—</div>
+      </div>
+      <div class="highlight-6-cell">
+        <div class="h6-label">Net Zero Year</div>
+        <div class="h6-value" id="h6-nz">—</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:flex-start;gap:5mm;margin-top:4mm">
+      <div style="border-top:2px solid var(--color-highlight);padding-top:3mm;flex:1">
+        <div style="font-size:7.5pt;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-muted);margin-bottom:1mm">NPV (Blended)</div>
+        <div style="font-size:18pt;font-weight:700;color:var(--color-primary)" id="h6-npv">—</div>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /page-content -->
+
+
+<!-- ══════════════════════════════════════
+     PAGE 3: EXECUTIVE SUMMARY
+════════════════════════════════════════ -->
+<div class="page-content break-before">
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Executive Summary</h2>
+    </div>
+
+    <div class="narrative-block" id="exec-summary-text">
+      Loading...
+    </div>
+
+  </div>
+
+</div><!-- /page-content -->
+
+
+<!-- ══════════════════════════════════════
+     PAGE 4: BASELINE ASSESSMENT
+════════════════════════════════════════ -->
+<div class="page-content break-before">
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Baseline Assessment</h2>
+      <span class="section-subtitle">Current energy &amp; emissions profile</span>
+    </div>
+
+    <div class="profile-grid">
+      <div class="profile-row">
+        <div class="profile-key">Building</div>
+        <div class="profile-value" id="bl-name">—</div>
+      </div>
+      <div class="profile-row">
+        <div class="profile-key">Address</div>
+        <div class="profile-value" id="bl-address">—</div>
+      </div>
+      <div class="profile-row">
+        <div class="profile-key">Asset Type</div>
+        <div class="profile-value" id="bl-type">—</div>
+      </div>
+      <div class="profile-row">
+        <div class="profile-key">GFA</div>
+        <div class="profile-value" id="bl-gfa">—</div>
+      </div>
+      <div class="profile-row">
+        <div class="profile-key">Year Built</div>
+        <div class="profile-value" id="bl-built">—</div>
+      </div>
+      <div class="profile-row">
+        <div class="profile-key">Baseline EUI</div>
+        <div class="profile-value" id="bl-eui">—</div>
+      </div>
+      <div class="profile-row">
+        <div class="profile-key">Baseline Emissions</div>
+        <div class="profile-value" id="bl-emissions">—</div>
+      </div>
+      <div class="profile-row">
+        <div class="profile-key">Annual Energy Cost</div>
+        <div class="profile-value" id="bl-cost">—</div>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /page-content -->
+
+
+<!-- ══════════════════════════════════════
+     PAGE 5: RECOMMENDED MEASURES
+════════════════════════════════════════ -->
+<div class="page-content break-before">
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Recommended Measures</h2>
+      <span class="section-subtitle">Sorted by implementation year</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:6%">Year</th>
+          <th style="width:34%">Measure</th>
+          <th class="align-right" style="width:12%">CapEx</th>
+          <th class="align-right" style="width:14%">Annual Savings</th>
+          <th class="align-right" style="width:10%">Payback</th>
+          <th class="align-right" style="width:14%">CO₂e Reduction</th>
+        </tr>
+      </thead>
+      <tbody id="measures-tbody">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+
+  </div>
+
+</div><!-- /page-content -->
+
+
+<!-- ══════════════════════════════════════
+     PAGE 6: IMPLEMENTATION TIMELINE (GANTT)
+════════════════════════════════════════ -->
+<div class="page-content break-before">
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Implementation Timeline</h2>
+      <span class="section-subtitle">Phased deployment by measure</span>
+    </div>
+
+    <div id="gantt-year-headers" style="display:none;margin-bottom:2mm;margin-left:38%"></div>
+
+    <table class="gantt-table">
+      <tbody id="gantt-body">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+
+    <div class="confidence-note" style="margin-top:5mm">
+      <strong>Note:</strong> Timeline reflects planned implementation year per measure. Actual schedule subject to contractor availability, permitting, and tenant coordination.
+    </div>
+
+  </div>
+
+</div><!-- /page-content -->
+
+
+<!-- ══════════════════════════════════════
+     PAGE 7: FINANCIAL PROJECTION
+════════════════════════════════════════ -->
+<div class="page-content break-before">
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Financial Projection</h2>
+      <span class="section-subtitle">Cumulative cashflow over the plan horizon</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:10%">Year</th>
+          <th class="align-right" style="width:22%">CapEx Deployed</th>
+          <th class="align-right" style="width:22%">Annual Savings</th>
+          <th class="align-right" style="width:22%">Cumulative Net</th>
+        </tr>
+      </thead>
+      <tbody id="fin-tbody">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+
+    <div class="confidence-note" style="margin-top:5mm">
+      <strong>Assumptions:</strong> Savings reflect energy cost at time of implementation. No inflation or escalation applied. Incentives and tax credits not included in base case — model separately for after-incentive IRR.
+    </div>
+
+  </div>
+
+</div><!-- /page-content -->
+
+
+<!-- ══════════════════════════════════════
+     PAGE 8: EMISSIONS TRAJECTORY
+════════════════════════════════════════ -->
+<div class="page-content break-before">
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Emissions Trajectory</h2>
+      <span class="section-subtitle">Baseline vs. retrofit vs. pathway target (tCO₂e/yr)</span>
+    </div>
+
+    <div class="emissions-legend">
+      <div class="legend-item"><div class="legend-dot legend-baseline"></div> Baseline (BAU)</div>
+      <div class="legend-item"><div class="legend-dot legend-retrofit"></div> With Retrofit Measures</div>
+      <div class="legend-item"><div class="legend-dot legend-pathway"></div> Pathway Target</div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:10%">Year</th>
+          <th class="align-right" style="width:26%">Baseline (tCO₂e)</th>
+          <th class="align-right" style="width:26%">With Retrofit (tCO₂e)</th>
+          <th class="align-right" style="width:26%">Pathway Target (tCO₂e)</th>
+        </tr>
+      </thead>
+      <tbody id="emissions-tbody">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+
+  </div>
+
+</div><!-- /page-content -->
+
+
+<!-- ══════════════════════════════════════
+     PAGE 9: ADDITIONAL OPPORTUNITIES
+════════════════════════════════════════ -->
+<div class="page-content break-before">
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Additional Opportunities</h2>
+      <span class="section-subtitle">From measure design analysis — not included in base plan</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:22%">Opportunity</th>
+          <th style="width:44%">Description</th>
+          <th class="align-right" style="width:15%">Est. CapEx</th>
+          <th class="align-right" style="width:15%">Est. Savings</th>
+        </tr>
+      </thead>
+      <tbody id="opp-tbody">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+
+    <div class="confidence-note" style="margin-top:5mm">
+      <strong>Note:</strong> Additional opportunities are indicative. Further feasibility study is recommended before inclusion in the capital plan.
+    </div>
+
+  </div>
+
+</div><!-- /page-content -->
+
+
+<!-- Paged.js — pinned 0.4.3 -->
+<script
+  src="https://unpkg.com/pagedjs@0.4.3/dist/paged.polyfill.js"
+  integrity="sha384-JkjBt3FPbcQ3WBc3qp+maUIw8YLoZxNNj8H+tn73mljkC1ba8aEPWlgwfCRPpAxV"
+  crossorigin="anonymous"></script>
+
+</body>
+</html>

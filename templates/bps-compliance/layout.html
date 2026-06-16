@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building Performance Standard Compliance Analysis</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─────────────────────────────────────────────
+       BRAND VARIABLES
+    ───────────────────────────────────────────── */
+    :root {
+      --color-primary:    var(--brand-color-primary,   #0F1923);
+      --color-secondary:  var(--brand-color-secondary, #2D6A4F);
+      --color-accent:     var(--brand-color-accent,    #F0F4F8);
+      --color-highlight:  var(--brand-color-highlight, #52B788);
+      --color-text:       var(--brand-color-text,      #0F1923);
+      --color-text-muted: var(--brand-color-muted,     #6B7280);
+      --color-border:     var(--brand-color-border,    #E5E7EB);
+      --font-heading:     var(--brand-font-heading,    'Inter', system-ui, sans-serif);
+      --font-body:        var(--brand-font-body,       'Inter', system-ui, sans-serif);
+      --font-mono:        var(--brand-font-mono,       'JetBrains Mono', monospace);
+
+      /* Compliance status colors */
+      --status-compliant-bg:     #D1FAE5;
+      --status-compliant-fg:     #065F46;
+      --status-compliant-border: #34D399;
+      --status-atrisk-bg:        #FEF3C7;
+      --status-atrisk-fg:        #92400E;
+      --status-atrisk-border:    #F59E0B;
+      --status-noncompliant-bg:  #FEF2F2;
+      --status-noncompliant-fg:  #991B1B;
+      --status-noncompliant-border: #EF4444;
+
+      /* Layout */
+      --page-margin-top:    18mm;
+      --page-margin-side:   16mm;
+      --page-margin-bottom: 20mm;
+    }
+
+    /* ─────────────────────────────────────────────
+       PAGED.JS PAGE RULES
+    ───────────────────────────────────────────── */
+    @page {
+      size: letter;
+      margin: var(--page-margin-top) var(--page-margin-side) var(--page-margin-bottom);
+
+      @top-left   { content: ""; }
+      @top-right  { content: ""; }
+      @bottom-left { content: ""; }
+      @bottom-center {
+        content: "Confidential — " string(orgName);
+        font-family: var(--font-body);
+        font-size: 8pt;
+        color: var(--color-text-muted);
+        text-align: center;
+      }
+      @bottom-right {
+        content: counter(page);
+        font-family: var(--font-body);
+        font-size: 8pt;
+        color: var(--color-text-muted);
+        text-align: right;
+      }
+    }
+
+    @page cover {
+      margin: 0;
+      @bottom-left   { content: none; }
+      @bottom-center { content: none; }
+      @bottom-right  { content: none; }
+    }
+
+    @page content {
+      @top-left {
+        content: string(propertyName);
+        font-family: var(--font-body);
+        font-size: 8pt;
+        color: var(--color-text-muted);
+        padding-top: 4mm;
+      }
+      @top-right {
+        content: "BPS Compliance Analysis";
+        font-family: var(--font-body);
+        font-size: 8pt;
+        color: var(--color-text-muted);
+        padding-top: 4mm;
+      }
+    }
+
+    /* ─────────────────────────────────────────────
+       RESET & BASE
+    ───────────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      font-family: var(--font-body);
+      font-size: 10pt;
+      color: var(--color-text);
+      background: #fff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ─────────────────────────────────────────────
+       COVER PAGE
+    ───────────────────────────────────────────── */
+    .page-cover {
+      page: cover;
+      break-after: page;
+      width: 100%;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .cover-header {
+      background: var(--color-primary);
+      color: #fff;
+      padding: 22mm 18mm 18mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 72mm;
+    }
+
+    .cover-header .report-label {
+      font-size: 9pt;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-highlight);
+      margin-bottom: 6mm;
+    }
+
+    .cover-header .property-name {
+      font-size: 26pt;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 3mm;
+      string-set: propertyName content();
+    }
+
+    .cover-header .property-address {
+      font-size: 12pt;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.72);
+      margin-bottom: 2mm;
+    }
+
+    .cover-header .regulation-label {
+      font-size: 10pt;
+      font-weight: 500;
+      color: var(--color-highlight);
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Compliance Status Badge — dominates the cover ── */
+    .cover-body {
+      padding: 10mm 18mm 0;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 7mm;
+    }
+
+    .compliance-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 3mm;
+      padding: 8mm 10mm;
+      border-radius: 5px;
+      border-left-width: 6px;
+      border-left-style: solid;
+    }
+
+    .compliance-badge.status-compliant {
+      background: var(--status-compliant-bg);
+      border-left-color: var(--status-compliant-border);
+    }
+    .compliance-badge.status-atrisk {
+      background: var(--status-atrisk-bg);
+      border-left-color: var(--status-atrisk-border);
+    }
+    .compliance-badge.status-noncompliant {
+      background: var(--status-noncompliant-bg);
+      border-left-color: var(--status-noncompliant-border);
+    }
+
+    .compliance-badge .badge-eyebrow {
+      font-size: 8pt;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .compliance-badge.status-compliant .badge-eyebrow { color: var(--status-compliant-fg); }
+    .compliance-badge.status-atrisk .badge-eyebrow    { color: var(--status-atrisk-fg); }
+    .compliance-badge.status-noncompliant .badge-eyebrow { color: var(--status-noncompliant-fg); }
+
+    .compliance-badge .badge-status-text {
+      font-size: 32pt;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .compliance-badge.status-compliant .badge-status-text { color: var(--status-compliant-fg); }
+    .compliance-badge.status-atrisk .badge-status-text    { color: var(--status-atrisk-fg); }
+    .compliance-badge.status-noncompliant .badge-status-text { color: var(--status-noncompliant-fg); }
+
+    .compliance-badge .badge-penalty {
+      font-size: 13pt;
+      font-weight: 600;
+      margin-top: 1mm;
+    }
+
+    .compliance-badge.status-noncompliant .badge-penalty { color: var(--status-noncompliant-fg); }
+    .compliance-badge.status-atrisk .badge-penalty       { color: var(--status-atrisk-fg); }
+
+    .compliance-badge .badge-subtext {
+      font-size: 9.5pt;
+      line-height: 1.45;
+    }
+
+    .compliance-badge.status-compliant .badge-subtext { color: var(--status-compliant-fg); }
+    .compliance-badge.status-atrisk .badge-subtext    { color: var(--status-atrisk-fg); }
+    .compliance-badge.status-noncompliant .badge-subtext { color: var(--status-noncompliant-fg); }
+
+    /* Cover meta grid */
+    .cover-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5mm 8mm;
+    }
+
+    .cover-meta-item {
+      border-top: 2px solid var(--color-highlight);
+      padding-top: 3mm;
+    }
+
+    .cover-meta-item .meta-label {
+      font-size: 7.5pt;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 1.5mm;
+    }
+
+    .cover-meta-item .meta-value {
+      font-size: 10.5pt;
+      font-weight: 500;
+      color: var(--color-text);
+    }
+
+    /* Cover footer */
+    .cover-footer {
+      padding: 5mm 18mm 8mm;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--color-border);
+      background: #fff;
+    }
+
+    .cover-footer .org-logo {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+    }
+
+    .cover-footer .logo-mark {
+      width: 22px;
+      height: 22px;
+      background: var(--color-primary);
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cover-footer .logo-mark svg {
+      width: 14px;
+      height: 14px;
+      fill: #fff;
+    }
+
+    .cover-footer .org-name {
+      font-size: 9pt;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .cover-footer .cover-footer-right {
+      text-align: right;
+    }
+
+    .cover-footer .confidential-label {
+      font-size: 7.5pt;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .cover-footer .report-date {
+      font-size: 8pt;
+      color: var(--color-text-muted);
+      margin-top: 0.5mm;
+    }
+
+    /* ─────────────────────────────────────────────
+       CONTENT PAGES
+    ───────────────────────────────────────────── */
+    .page-content {
+      page: content;
+    }
+
+    /* ─────────────────────────────────────────────
+       SECTION STRUCTURE
+    ───────────────────────────────────────────── */
+    .section {
+      break-inside: avoid-page;
+      margin-bottom: 9mm;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      margin-bottom: 4mm;
+      padding-bottom: 2.5mm;
+      border-bottom: 1.5px solid var(--color-border);
+    }
+
+    .section-accent {
+      width: 3px;
+      height: 18px;
+      background: var(--color-secondary);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-family: var(--font-heading);
+      font-size: 14pt;
+      font-weight: 700;
+      color: var(--color-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .section-subtitle {
+      font-size: 8.5pt;
+      color: var(--color-text-muted);
+      margin-left: auto;
+    }
+
+    /* ─────────────────────────────────────────────
+       TABLES
+    ───────────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9pt;
+    }
+
+    thead th {
+      background: var(--color-primary);
+      color: #fff;
+      font-weight: 600;
+      font-size: 8pt;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 3mm 4mm;
+      text-align: left;
+    }
+
+    thead th:first-child { border-radius: 2px 0 0 0; }
+    thead th:last-child  { border-radius: 0 2px 0 0; }
+
+    tbody tr:nth-child(odd)  { background: var(--color-accent); }
+    tbody tr:nth-child(even) { background: #fff; }
+
+    tbody td {
+      padding: 2.5mm 4mm;
+      vertical-align: top;
+      line-height: 1.4;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    tbody tr.row-total td {
+      background: var(--color-primary);
+      color: #fff;
+      font-weight: 700;
+      font-size: 9pt;
+      border-top: none;
+      border-bottom: none;
+    }
+
+    td.align-right, th.align-right { text-align: right; }
+    td.align-center, th.align-center { text-align: center; }
+    td.text-muted { color: var(--color-text-muted); font-size: 8.5pt; }
+    td.mono { font-family: var(--font-mono); font-size: 8.5pt; }
+
+    /* ─────────────────────────────────────────────
+       COMPLIANCE STATUS PILLS (inline in tables)
+    ───────────────────────────────────────────── */
+    .status-pill {
+      display: inline-block;
+      font-size: 7.5pt;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 1mm 2.5mm;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    .status-pill.compliant {
+      background: var(--status-compliant-bg);
+      color: var(--status-compliant-fg);
+      border: 1px solid var(--status-compliant-border);
+    }
+
+    .status-pill.at-risk {
+      background: var(--status-atrisk-bg);
+      color: var(--status-atrisk-fg);
+      border: 1px solid var(--status-atrisk-border);
+    }
+
+    .status-pill.non-compliant {
+      background: var(--status-noncompliant-bg);
+      color: var(--status-noncompliant-fg);
+      border: 1px solid var(--status-noncompliant-border);
+    }
+
+    /* ─────────────────────────────────────────────
+       TWO-COLUMN KEY/VALUE PROFILE GRID
+    ───────────────────────────────────────────── */
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 44mm 1fr;
+      row-gap: 0;
+    }
+
+    .profile-row { display: contents; }
+
+    .profile-row .profile-key,
+    .profile-row .profile-value {
+      padding: 2.5mm 4mm;
+      border-bottom: 1px solid var(--color-border);
+      font-size: 9pt;
+      line-height: 1.45;
+    }
+
+    .profile-row:last-child .profile-key,
+    .profile-row:last-child .profile-value { border-bottom: none; }
+
+    .profile-row:nth-child(odd) .profile-key,
+    .profile-row:nth-child(odd) .profile-value { background: var(--color-accent); }
+
+    .profile-key {
+      font-weight: 600;
+      font-size: 8.5pt;
+      color: var(--color-primary);
+      white-space: nowrap;
+    }
+
+    /* ─────────────────────────────────────────────
+       PENALTY HIGHLIGHT BOX
+    ───────────────────────────────────────────── */
+    .penalty-callout {
+      background: var(--status-noncompliant-bg);
+      border: 1px solid var(--status-noncompliant-border);
+      border-left: 4px solid var(--status-noncompliant-border);
+      border-radius: 4px;
+      padding: 5mm 6mm;
+      margin-bottom: 6mm;
+      break-inside: avoid;
+    }
+
+    .penalty-callout.at-risk {
+      background: var(--status-atrisk-bg);
+      border-color: var(--status-atrisk-border);
+      border-left-color: var(--status-atrisk-border);
+    }
+
+    .penalty-callout .callout-label {
+      font-size: 7.5pt;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--status-noncompliant-fg);
+      margin-bottom: 2mm;
+    }
+
+    .penalty-callout.at-risk .callout-label { color: var(--status-atrisk-fg); }
+
+    .penalty-callout .callout-amount {
+      font-size: 22pt;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--status-noncompliant-fg);
+      line-height: 1;
+    }
+
+    .penalty-callout.at-risk .callout-amount { color: var(--status-atrisk-fg); }
+
+    .penalty-callout .callout-subtext {
+      font-size: 9pt;
+      color: var(--status-noncompliant-fg);
+      margin-top: 2mm;
+    }
+
+    .penalty-callout.at-risk .callout-subtext { color: var(--status-atrisk-fg); }
+
+    /* ─────────────────────────────────────────────
+       GAP BAR (pathway table)
+    ───────────────────────────────────────────── */
+    .gap-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+    }
+
+    .gap-bar-track {
+      flex: 1;
+      height: 5px;
+      background: var(--color-border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .gap-bar-fill {
+      height: 100%;
+      background: var(--color-secondary);
+      border-radius: 3px;
+    }
+
+    .gap-bar-fill.overrun {
+      background: var(--status-compliant-border);
+    }
+
+    .gap-bar-label {
+      font-size: 8pt;
+      font-weight: 600;
+      color: var(--color-secondary);
+      white-space: nowrap;
+      min-width: 8mm;
+      text-align: right;
+    }
+
+    /* ─────────────────────────────────────────────
+       CERTIFICATION STATUS
+    ───────────────────────────────────────────── */
+    .cert-status {
+      display: inline-block;
+      font-size: 7.5pt;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 1mm 2mm;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+
+    .cert-status.achieved {
+      background: var(--status-compliant-bg);
+      color: var(--status-compliant-fg);
+    }
+
+    .cert-status.in-progress {
+      background: #DBEAFE;
+      color: #1E40AF;
+    }
+
+    .cert-status.recommended {
+      background: #F3F4F6;
+      color: #374151;
+    }
+
+    /* ─────────────────────────────────────────────
+       CUMULATIVE PENALTY — emphasis for large numbers
+    ───────────────────────────────────────────── */
+    .penalty-emphasis {
+      font-family: var(--font-mono);
+      font-size: 8.5pt;
+      font-weight: 500;
+    }
+
+    .penalty-emphasis.large {
+      color: var(--status-noncompliant-fg);
+      font-weight: 700;
+    }
+
+    /* ─────────────────────────────────────────────
+       NOTE / FOOTNOTE
+    ───────────────────────────────────────────── */
+    .section-note {
+      margin-top: 4mm;
+      padding: 3mm 4mm;
+      background: var(--color-accent);
+      border: 1px solid var(--color-border);
+      border-radius: 3px;
+      font-size: 8.5pt;
+      color: var(--color-text-muted);
+      line-height: 1.45;
+    }
+
+    .section-note strong {
+      color: var(--color-text);
+      font-weight: 600;
+    }
+
+    /* ─────────────────────────────────────────────
+       PAGE BREAKS
+    ───────────────────────────────────────────── */
+    .break-before { break-before: page; }
+
+    /* ─────────────────────────────────────────────
+       PAGED.JS NAMED STRING ANCHOR
+    ───────────────────────────────────────────── */
+    #org-name-anchor {
+      string-set: orgName content();
+      display: none;
+    }
+
+    /* ─────────────────────────────────────────────
+       UTILITY
+    ───────────────────────────────────────────── */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ──────────────────────────────────────────────────────────────────
+     REPORT DATA — replace this script block at render time.
+     All values shown here are illustrative (Local Law 97, NYC office).
+────────────────────────────────────────────────────────────────────── -->
+<script id="report-data" type="application/json">
+{
+  "property": {
+    "name": "345 Park South",
+    "address": "345 Park Avenue South, New York, NY 10010",
+    "type": "office",
+    "gfa_sqft": 285000,
+    "year_built": 1972,
+    "jurisdiction": { "city": "New York City", "state": "NY" }
+  },
+  "regulation": {
+    "name": "Local Law 97",
+    "authority": "NYC Department of Buildings",
+    "compliance_start_year": 2024,
+    "reporting_cycle": "annual",
+    "framework": "carbon_intensity",
+    "penalty_rate_usd_per_tco2e": 268,
+    "notes": "Thresholds tighten in 2030 and again in 2035. Buildings over 25,000 sf."
+  },
+  "current_performance": {
+    "actual_carbon_kgco2_m2yr": 8.4,
+    "actual_emissions_tco2e": 2220,
+    "benchmark_threshold": 1850,
+    "compliance_status": "non-compliant",
+    "penalty_per_year_usd": 99160,
+    "performance_year": 2024,
+    "data_source": "ENERGY STAR Portfolio Manager — 2024 full-year bills"
+  },
+  "compliance_periods": [
+    {
+      "period_label": "2024–2029",
+      "threshold_tco2e": 1850,
+      "projected_emissions_tco2e": 2220,
+      "projected_penalty_usd": 99160,
+      "compliance_status": "non-compliant",
+      "notes": "Current performance; penalty begins 2025 reporting cycle"
+    },
+    {
+      "period_label": "2030–2034",
+      "threshold_tco2e": 975,
+      "projected_emissions_tco2e": 2100,
+      "projected_penalty_usd": 300300,
+      "compliance_status": "non-compliant",
+      "notes": "Threshold drops ~47%; significant measure investment required"
+    },
+    {
+      "period_label": "2035+",
+      "threshold_tco2e": 440,
+      "projected_emissions_tco2e": 1800,
+      "projected_penalty_usd": 364640,
+      "compliance_status": "non-compliant",
+      "notes": "Near-zero carbon target; full electrification required"
+    }
+  ],
+  "pathway_to_compliance": [
+    {
+      "measure": "LED lighting + daylight controls — all floors",
+      "capex": 420000,
+      "annual_savings_usd": 58000,
+      "emissions_reduction_tco2e": 95,
+      "implementation_year": 2025,
+      "closes_gap_pct": 25.7,
+      "running_gap_closed_pct": 25.7,
+      "incentives": "Con Edison CEF rebates; Section 179D deduction"
+    },
+    {
+      "measure": "Building automation system upgrade + demand control ventilation",
+      "capex": 680000,
+      "annual_savings_usd": 82000,
+      "emissions_reduction_tco2e": 148,
+      "implementation_year": 2026,
+      "closes_gap_pct": 40.0,
+      "running_gap_closed_pct": 65.7,
+      "incentives": "Con Edison Smart Usage Rewards"
+    },
+    {
+      "measure": "Heat pump air handling units — floors 2-12",
+      "capex": 1850000,
+      "annual_savings_usd": 44000,
+      "emissions_reduction_tco2e": 127,
+      "implementation_year": 2028,
+      "closes_gap_pct": 34.3,
+      "running_gap_closed_pct": 100.0,
+      "incentives": "IRA §48E ITC (30%); NYSERDA Clean Heat rebate"
+    }
+  ],
+  "penalty_projection": [
+    { "year": 2025, "threshold_tco2e": 1850, "projected_emissions_tco2e": 2220, "annual_penalty_usd": 99160,  "cumulative_penalty_usd": 99160  },
+    { "year": 2026, "threshold_tco2e": 1850, "projected_emissions_tco2e": 2180, "annual_penalty_usd": 88560,  "cumulative_penalty_usd": 187720 },
+    { "year": 2027, "threshold_tco2e": 1850, "projected_emissions_tco2e": 2180, "annual_penalty_usd": 88560,  "cumulative_penalty_usd": 276280 },
+    { "year": 2028, "threshold_tco2e": 1850, "projected_emissions_tco2e": 2180, "annual_penalty_usd": 88560,  "cumulative_penalty_usd": 364840 },
+    { "year": 2029, "threshold_tco2e": 1850, "projected_emissions_tco2e": 2180, "annual_penalty_usd": 88560,  "cumulative_penalty_usd": 453400 },
+    { "year": 2030, "threshold_tco2e": 975,  "projected_emissions_tco2e": 2100, "annual_penalty_usd": 300300, "cumulative_penalty_usd": 753700 },
+    { "year": 2031, "threshold_tco2e": 975,  "projected_emissions_tco2e": 2100, "annual_penalty_usd": 300300, "cumulative_penalty_usd": 1054000 },
+    { "year": 2032, "threshold_tco2e": 975,  "projected_emissions_tco2e": 2100, "annual_penalty_usd": 300300, "cumulative_penalty_usd": 1354300 }
+  ],
+  "certifications": [
+    {
+      "name": "ENERGY STAR Certification",
+      "status": "recommended",
+      "penalty_offset_pct": null,
+      "description": "Building scores 52; target score 75 required. Achievable with LED + BAS measures."
+    },
+    {
+      "name": "LEED O+M Gold",
+      "status": "in-progress",
+      "penalty_offset_pct": null,
+      "description": "Documentation in progress; projected Gold with current capital plan."
+    },
+    {
+      "name": "NYC Accelerator Benchmarking",
+      "status": "achieved",
+      "penalty_offset_pct": null,
+      "description": "Enrolled; annual reporting current."
+    }
+  ],
+  "prepared_by": "Aris / Audette Sustainability Intelligence",
+  "prepared_for": "Park South Capital — Asset Management",
+  "report_date": "2026-06-16"
+}
+</script>
+
+<script>
+  window.PagedConfig = {
+    auto: true,
+    before: function() { return populateReport(); }
+  };
+
+  function populateReport() {
+    var dataEl = document.getElementById('report-data');
+    if (!dataEl) return;
+
+    var data;
+    try { data = JSON.parse(dataEl.textContent); }
+    catch(e) { console.error('BPS: failed to parse report-data JSON', e); return; }
+
+    var prop    = data.property              || {};
+    var reg     = data.regulation            || {};
+    var current = data.current_performance   || {};
+    var periods = data.compliance_periods    || [];
+    var pathway = data.pathway_to_compliance || [];
+    var penalty = data.penalty_projection    || [];
+    var certs   = data.certifications        || [];
+
+    /* ── Helpers ── */
+    function safe(v) { return (v !== undefined && v !== null && v !== '') ? String(v) : '—'; }
+
+    function fmtCurrency(n) {
+      if (typeof n !== 'number' || isNaN(n)) return '—';
+      if (n >= 1000000) return '$' + (n / 1000000).toFixed(2).replace(/\.?0+$/, '') + 'M';
+      if (n >= 1000)    return '$' + n.toLocaleString('en-US');
+      return '$' + n.toFixed(0);
+    }
+
+    function fmtNum(n, decimals) {
+      if (typeof n !== 'number' || isNaN(n)) return '—';
+      return n.toLocaleString('en-US', { minimumFractionDigits: decimals || 0, maximumFractionDigits: decimals || 0 });
+    }
+
+    function fmtSqft(n) {
+      if (typeof n !== 'number') return '—';
+      return n.toLocaleString('en-US') + ' sqft';
+    }
+
+    function statusClass(s) {
+      if (s === 'compliant')     return 'compliant';
+      if (s === 'at-risk')       return 'at-risk';
+      if (s === 'non-compliant') return 'non-compliant';
+      return '';
+    }
+
+    function statusLabel(s) {
+      if (s === 'compliant')     return 'Compliant';
+      if (s === 'at-risk')       return 'At Risk';
+      if (s === 'non-compliant') return 'Non-Compliant';
+      return safe(s);
+    }
+
+    function badgeClass(s) {
+      if (s === 'compliant')     return 'status-compliant';
+      if (s === 'at-risk')       return 'status-atrisk';
+      if (s === 'non-compliant') return 'status-noncompliant';
+      return 'status-noncompliant';
+    }
+
+    function badgeStatusText(s) {
+      if (s === 'compliant')     return 'COMPLIANT';
+      if (s === 'at-risk')       return 'AT RISK';
+      if (s === 'non-compliant') return 'NON-COMPLIANT';
+      return safe(s).toUpperCase();
+    }
+
+    function certStatusClass(s) {
+      if (s === 'achieved')     return 'achieved';
+      if (s === 'in-progress')  return 'in-progress';
+      if (s === 'recommended')  return 'recommended';
+      return 'recommended';
+    }
+
+    function certStatusLabel(s) {
+      if (s === 'achieved')    return 'Achieved';
+      if (s === 'in-progress') return 'In Progress';
+      if (s === 'recommended') return 'Recommended';
+      return safe(s);
+    }
+
+    /* ── Named string anchors ── */
+    setText('org-name-anchor', safe(data.prepared_for || data.prepared_by || 'Confidential'));
+
+    /* ── COVER ── */
+    setText('cover-property-name',    safe(prop.name));
+    setText('cover-property-address', safe(prop.address));
+    setText('cover-regulation-label', safe(reg.name) + ' · ' + safe((prop.jurisdiction || {}).city));
+
+    /* Compliance badge */
+    var badge = document.getElementById('cover-compliance-badge');
+    if (badge) {
+      badge.className = 'compliance-badge ' + badgeClass(current.compliance_status);
+      document.getElementById('cover-badge-status-text').textContent = badgeStatusText(current.compliance_status);
+
+      var penaltyEl = document.getElementById('cover-badge-penalty');
+      if (penaltyEl) {
+        if (current.compliance_status === 'non-compliant' && current.penalty_per_year_usd) {
+          penaltyEl.textContent = fmtCurrency(current.penalty_per_year_usd) + '/yr estimated penalty';
+          penaltyEl.style.display = '';
+        } else if (current.compliance_status === 'at-risk') {
+          penaltyEl.textContent = 'Within 10% of threshold — monitor closely';
+          penaltyEl.style.display = '';
+        } else {
+          penaltyEl.style.display = 'none';
+        }
+      }
+
+      var subtextEl = document.getElementById('cover-badge-subtext');
+      if (subtextEl) {
+        if (current.compliance_status === 'compliant') {
+          subtextEl.textContent = reg.name + ' · ' + safe((prop.jurisdiction || {}).city);
+        } else {
+          subtextEl.textContent = fmtNum(current.actual_emissions_tco2e) + ' tCO₂e actual vs. ' + fmtNum(current.benchmark_threshold) + ' tCO₂e threshold (' + safe(current.performance_year) + ')';
+        }
+      }
+    }
+
+    /* Cover meta grid */
+    setText('cover-meta-type',  capitalise(safe(prop.type)));
+    setText('cover-meta-gfa',   fmtSqft(prop.gfa_sqft));
+    setText('cover-meta-built', prop.year_built ? String(prop.year_built) : '—');
+    setText('cover-meta-reg',   safe(reg.name));
+    setText('cover-meta-for',   safe(data.prepared_for));
+    setText('cover-meta-date',  safe(data.report_date));
+
+    /* ────────────────────────────────────────────────────
+       PAGE 2: COMPLIANCE OVERVIEW
+    ──────────────────────────────────────────────────── */
+
+    /* Penalty callout (only for non-compliant / at-risk) */
+    var penaltyCallout = document.getElementById('penalty-callout');
+    if (penaltyCallout) {
+      if (current.compliance_status === 'non-compliant' || current.compliance_status === 'at-risk') {
+        penaltyCallout.className = 'penalty-callout' + (current.compliance_status === 'at-risk' ? ' at-risk' : '');
+        setText('penalty-callout-amount',  fmtCurrency(current.penalty_per_year_usd));
+        setText('penalty-callout-subtext', 'estimated annual fine under ' + safe(reg.name) + ' at current performance (' + safe(current.performance_year) + ')');
+        penaltyCallout.style.display = '';
+      } else {
+        penaltyCallout.style.display = 'none';
+      }
+    }
+
+    /* Current performance profile */
+    var metricLabel = reg.framework === 'energy_intensity' ? 'Site EUI' : 'Carbon Intensity';
+    var metricValue = reg.framework === 'energy_intensity'
+      ? (current.actual_eui_kbtu_sqft != null ? fmtNum(current.actual_eui_kbtu_sqft, 1) + ' kBtu/sqft/yr' : '—')
+      : (current.actual_carbon_kgco2_m2yr != null ? fmtNum(current.actual_carbon_kgco2_m2yr, 1) + ' kgCO₂e/m²/yr' : '—');
+
+    setHtml('overview-profile', buildProfileGrid([
+      ['Regulation', '<strong>' + safe(reg.name) + '</strong> — ' + safe(reg.authority)],
+      ['Framework', capitalise(safe(reg.framework).replace(/_/g, ' '))],
+      ['Compliance Start', safe(reg.compliance_start_year)],
+      ['Reporting Cycle', capitalise(safe(reg.reporting_cycle))],
+      [metricLabel, metricValue],
+      ['Total Emissions', fmtNum(current.actual_emissions_tco2e) + ' tCO₂e (' + safe(current.performance_year) + ')'],
+      ['Threshold', fmtNum(current.benchmark_threshold) + ' tCO₂e'],
+      ['Variance', current.actual_emissions_tco2e != null && current.benchmark_threshold != null
+          ? (current.actual_emissions_tco2e > current.benchmark_threshold
+              ? '+' + fmtNum(current.actual_emissions_tco2e - current.benchmark_threshold) + ' tCO₂e over threshold'
+              : fmtNum(current.benchmark_threshold - current.actual_emissions_tco2e) + ' tCO₂e below threshold')
+          : '—'],
+      ['Data Source', safe(current.data_source)],
+      ['Current Status', '<span class="status-pill ' + statusClass(current.compliance_status) + '">' + statusLabel(current.compliance_status) + '</span>']
+    ]));
+
+    /* Compliance periods table */
+    var periodsTbody = document.getElementById('periods-tbody');
+    if (periodsTbody) {
+      var html = '';
+      periods.forEach(function(p) {
+        var variance = (p.projected_emissions_tco2e != null && p.threshold_tco2e != null)
+          ? p.projected_emissions_tco2e - p.threshold_tco2e : null;
+        html += '<tr>';
+        html += '<td>' + safe(p.period_label) + (p.notes ? '<div class="text-muted" style="font-size:8pt;color:var(--color-text-muted);margin-top:1mm">' + safe(p.notes) + '</div>' : '') + '</td>';
+        html += '<td class="align-right mono">' + fmtNum(p.threshold_tco2e) + '</td>';
+        html += '<td class="align-right mono">' + fmtNum(p.projected_emissions_tco2e) + '</td>';
+        html += '<td class="align-right mono">' + (variance != null ? (variance > 0 ? '+' + fmtNum(variance) : fmtNum(variance)) : '—') + '</td>';
+        html += '<td class="align-right">' + (p.projected_penalty_usd ? fmtCurrency(p.projected_penalty_usd) + '/yr' : '—') + '</td>';
+        html += '<td class="align-center"><span class="status-pill ' + statusClass(p.compliance_status) + '">' + statusLabel(p.compliance_status) + '</span></td>';
+        html += '</tr>';
+      });
+      periodsTbody.innerHTML = html;
+    }
+
+    /* ────────────────────────────────────────────────────
+       PAGE 3: PENALTY PROJECTION
+    ──────────────────────────────────────────────────── */
+    var penaltyTbody = document.getElementById('penalty-tbody');
+    if (penaltyTbody) {
+      var html = '';
+      var maxCumulative = Math.max.apply(null, penalty.map(function(r){ return r.cumulative_penalty_usd || 0; }));
+      penalty.forEach(function(r) {
+        var isLarge = r.cumulative_penalty_usd > 1000000;
+        html += '<tr>';
+        html += '<td class="mono">' + safe(r.year) + '</td>';
+        html += '<td class="align-right mono">' + fmtNum(r.threshold_tco2e) + '</td>';
+        html += '<td class="align-right mono">' + fmtNum(r.projected_emissions_tco2e) + '</td>';
+        html += '<td class="align-right mono">' + (r.annual_penalty_usd ? fmtCurrency(r.annual_penalty_usd) : '—') + '</td>';
+        html += '<td class="align-right"><span class="penalty-emphasis' + (isLarge ? ' large' : '') + '">' + (r.cumulative_penalty_usd ? fmtCurrency(r.cumulative_penalty_usd) : '—') + '</span></td>';
+        html += '</tr>';
+      });
+      penaltyTbody.innerHTML = html;
+    }
+
+    /* ────────────────────────────────────────────────────
+       PAGE 4: PATHWAY TO COMPLIANCE
+    ──────────────────────────────────────────────────── */
+    var pathwayTbody = document.getElementById('pathway-tbody');
+    if (pathwayTbody) {
+      var html = '';
+      var totalCapex = pathway.reduce(function(s, m){ return s + (m.capex || 0); }, 0);
+
+      pathway.forEach(function(m, i) {
+        var costPerTon = (m.capex && m.emissions_reduction_tco2e)
+          ? fmtCurrency(Math.round(m.capex / m.emissions_reduction_tco2e)) + '/tCO₂e' : '—';
+        var gapPct = m.closes_gap_pct || 0;
+        var runPct = m.running_gap_closed_pct || 0;
+        var isComplete = runPct >= 100;
+
+        var incentiveHtml = m.incentives
+          ? m.incentives.split(';').map(function(p) {
+              return '<span style="display:inline-block;font-size:7.5pt;font-weight:500;padding:0.5mm 2mm;border-radius:10px;border:1px solid var(--color-highlight);color:var(--color-secondary);margin:0.5mm 1mm 0.5mm 0">' + p.trim() + '</span>';
+            }).join('')
+          : '—';
+
+        html += '<tr>';
+        html += '<td>' + safe(m.measure) + (m.incentives ? '<div style="margin-top:2mm">' + incentiveHtml + '</div>' : '') + '</td>';
+        html += '<td class="align-center">' + safe(m.implementation_year) + '</td>';
+        html += '<td class="align-right mono">' + fmtNum(m.emissions_reduction_tco2e, 0) + '</td>';
+        html += '<td class="align-right mono">' + fmtCurrency(m.capex) + '</td>';
+        html += '<td class="align-right mono">' + costPerTon + '</td>';
+        html += '<td class="align-right mono">' + (m.annual_savings_usd ? fmtCurrency(m.annual_savings_usd) + '/yr' : '—') + '</td>';
+        html += '<td style="min-width:28mm">';
+        html += '<div class="gap-bar-wrap">';
+        html += '<div class="gap-bar-track"><div class="gap-bar-fill' + (isComplete ? ' overrun' : '') + '" style="width:' + Math.min(runPct, 100).toFixed(1) + '%"></div></div>';
+        html += '<div class="gap-bar-label">' + fmtNum(runPct, 0) + '%</div>';
+        html += '</div>';
+        html += '</td>';
+        html += '</tr>';
+      });
+
+      /* Totals row */
+      html += '<tr class="row-total">';
+      html += '<td>Total Pathway Investment</td>';
+      html += '<td></td>';
+      html += '<td class="align-right">' + fmtNum(pathway.reduce(function(s, m){ return s + (m.emissions_reduction_tco2e || 0); }, 0), 0) + '</td>';
+      html += '<td class="align-right">' + fmtCurrency(totalCapex) + '</td>';
+      html += '<td colspan="3"></td>';
+      html += '</tr>';
+
+      pathwayTbody.innerHTML = html;
+    }
+
+    /* ────────────────────────────────────────────────────
+       PAGE 5: CERTIFICATIONS
+    ──────────────────────────────────────────────────── */
+    var certsTbody = document.getElementById('certs-tbody');
+    if (certsTbody) {
+      if (certs.length === 0) {
+        certsTbody.innerHTML = '<tr><td colspan="4" class="text-muted" style="text-align:center;padding:6mm">No certifications data provided.</td></tr>';
+      } else {
+        var html = '';
+        certs.forEach(function(c) {
+          html += '<tr>';
+          html += '<td><strong>' + safe(c.name) + '</strong></td>';
+          html += '<td class="align-center"><span class="cert-status ' + certStatusClass(c.status) + '">' + certStatusLabel(c.status) + '</span></td>';
+          html += '<td class="align-center">' + (c.penalty_offset_pct != null ? c.penalty_offset_pct + '% penalty offset' : '—') + '</td>';
+          html += '<td>' + safe(c.description) + '</td>';
+          html += '</tr>';
+        });
+        certsTbody.innerHTML = html;
+      }
+    }
+  }
+
+  /* ── DOM Helpers ── */
+  function setText(id, val) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  function setHtml(id, val) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = val;
+  }
+
+  function capitalise(s) {
+    if (!s) return '';
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  function buildProfileGrid(rows) {
+    var html = '<div class="profile-grid">';
+    rows.forEach(function(row) {
+      html += '<div class="profile-row">';
+      html += '<div class="profile-key">' + row[0] + '</div>';
+      html += '<div class="profile-value">' + row[1] + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+    return html;
+  }
+</script>
+
+<!-- Paged.js named string anchor -->
+<span id="org-name-anchor" aria-hidden="true"></span>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 1: COVER
+══════════════════════════════════════════════════════════════ -->
+<div class="page-cover">
+
+  <div class="cover-header">
+    <div class="report-label">Building Performance Standard Compliance Analysis</div>
+    <h1 class="property-name" id="cover-property-name">Property Name</h1>
+    <div class="property-address" id="cover-property-address">Address</div>
+    <div class="regulation-label" id="cover-regulation-label">Regulation · Jurisdiction</div>
+  </div>
+
+  <div class="cover-body">
+
+    <!-- Compliance status badge — leads the page -->
+    <div id="cover-compliance-badge" class="compliance-badge status-noncompliant">
+      <div class="badge-eyebrow">Compliance Status</div>
+      <div class="badge-status-text" id="cover-badge-status-text">NON-COMPLIANT</div>
+      <div class="badge-penalty" id="cover-badge-penalty"></div>
+      <div class="badge-subtext" id="cover-badge-subtext"></div>
+    </div>
+
+    <!-- Property meta grid -->
+    <div class="cover-meta-grid">
+      <div class="cover-meta-item">
+        <div class="meta-label">Asset Type</div>
+        <div class="meta-value" id="cover-meta-type">—</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="meta-label">Gross Floor Area</div>
+        <div class="meta-value" id="cover-meta-gfa">—</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="meta-label">Year Built</div>
+        <div class="meta-value" id="cover-meta-built">—</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="meta-label">Regulation</div>
+        <div class="meta-value" id="cover-meta-reg">—</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="meta-label">Prepared For</div>
+        <div class="meta-value" id="cover-meta-for">—</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="meta-label">Report Date</div>
+        <div class="meta-value" id="cover-meta-date">—</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="cover-footer">
+    <div class="org-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="0" y="0" width="6" height="6" rx="1"/>
+          <rect x="8" y="0" width="6" height="6" rx="1"/>
+          <rect x="0" y="8" width="6" height="6" rx="1"/>
+          <rect x="8" y="8" width="6" height="6" rx="1"/>
+        </svg>
+      </div>
+      <span class="org-name">Aris · Sustainability Intelligence</span>
+    </div>
+    <div class="cover-footer-right">
+      <div class="confidential-label">Confidential</div>
+      <div class="report-date" id="cover-footer-date"></div>
+    </div>
+  </div>
+
+</div><!-- /page-cover -->
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 2: COMPLIANCE OVERVIEW
+══════════════════════════════════════════════════════════════ -->
+<div class="page-content">
+
+  <!-- Penalty exposure callout (hidden for compliant buildings) -->
+  <div id="penalty-callout" class="penalty-callout" style="display:none">
+    <div class="callout-label">Estimated Annual Penalty — No Action</div>
+    <div class="callout-amount" id="penalty-callout-amount">—</div>
+    <div class="callout-subtext" id="penalty-callout-subtext"></div>
+  </div>
+
+  <!-- Current performance profile -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Compliance Overview</h2>
+      <span class="section-subtitle">Current performance vs. threshold</span>
+    </div>
+    <div id="overview-profile"><!-- Populated by JS --></div>
+  </div>
+
+  <!-- Compliance periods table -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Regulatory Period Summary</h2>
+      <span class="section-subtitle">Projected penalty exposure by compliance period</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:18%">Period</th>
+          <th class="align-right" style="width:14%">Threshold (tCO₂e)</th>
+          <th class="align-right" style="width:15%">Projected (tCO₂e)</th>
+          <th class="align-right" style="width:13%">Variance (tCO₂e)</th>
+          <th class="align-right" style="width:16%">Annual Penalty</th>
+          <th class="align-center" style="width:14%">Status</th>
+        </tr>
+      </thead>
+      <tbody id="periods-tbody">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+
+    <div class="section-note">
+      <strong>Projections</strong> assume no capital improvements beyond current baseline. Thresholds are set by regulation and do not change based on building performance.
+    </div>
+  </div>
+
+</div><!-- /page-content: compliance overview -->
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 3: PENALTY PROJECTION
+══════════════════════════════════════════════════════════════ -->
+<div class="page-content break-before">
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Penalty Projection — Cost of Inaction</h2>
+      <span class="section-subtitle">Year-by-year cumulative fine exposure without remediation</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:10%">Year</th>
+          <th class="align-right" style="width:16%">Threshold (tCO₂e)</th>
+          <th class="align-right" style="width:18%">Projected Emissions</th>
+          <th class="align-right" style="width:18%">Annual Penalty</th>
+          <th class="align-right" style="width:20%">Cumulative Penalty</th>
+        </tr>
+      </thead>
+      <tbody id="penalty-tbody">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+
+    <div class="section-note">
+      <strong>Assumptions:</strong> Penalty rate per the regulation's published schedule. Emissions are held flat at current measured performance. Cumulative total represents the sum of annual fines with no discount rate applied — this is the nominal cash outflow to the city, not NPV.
+    </div>
+  </div>
+
+</div><!-- /page-content: penalty projection -->
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 4: PATHWAY TO COMPLIANCE
+══════════════════════════════════════════════════════════════ -->
+<div class="page-content break-before">
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Pathway to Compliance</h2>
+      <span class="section-subtitle">Measures ranked by emissions reduction per dollar invested</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:26%">Measure &amp; Incentives</th>
+          <th class="align-center" style="width:9%">Impl. Year</th>
+          <th class="align-right" style="width:10%">Reduction (tCO₂e)</th>
+          <th class="align-right" style="width:10%">CapEx</th>
+          <th class="align-right" style="width:11%">Cost / tCO₂e</th>
+          <th class="align-right" style="width:10%">Op. Savings</th>
+          <th style="width:14%">Gap Closed</th>
+        </tr>
+      </thead>
+      <tbody id="pathway-tbody">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+
+    <div class="section-note">
+      <strong>Gap Closed</strong> shows the cumulative percentage of the current compliance gap eliminated by each measure in sequence. 100% = the building reaches the threshold for the current regulatory period. Measures shown in recommended implementation order.
+    </div>
+  </div>
+
+</div><!-- /page-content: pathway -->
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 5: CERTIFICATION OPPORTUNITIES
+══════════════════════════════════════════════════════════════ -->
+<div class="page-content break-before">
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Certification Opportunities</h2>
+      <span class="section-subtitle">Applicable green certifications and penalty offset benefits</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:28%">Certification</th>
+          <th class="align-center" style="width:14%">Status</th>
+          <th class="align-center" style="width:16%">Penalty Offset</th>
+          <th style="width:42%">Notes</th>
+        </tr>
+      </thead>
+      <tbody id="certs-tbody">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+
+    <div class="section-note">
+      <strong>Penalty Offsets:</strong> Some jurisdictions grant fine reductions for certified buildings. Confirm applicable offsets with legal counsel and the enforcing agency before including in financial projections.
+    </div>
+  </div>
+
+</div><!-- /page-content: certifications -->
+
+
+<!-- Paged.js — loaded LAST so PagedConfig.before fires before pagination. -->
+<script
+  src="https://unpkg.com/pagedjs@0.4.3/dist/paged.polyfill.js"
+  integrity="sha384-JkjBt3FPbcQ3WBc3qp+maUIw8YLoZxNNj8H+tn73mljkC1ba8aEPWlgwfCRPpAxV"
+  crossorigin="anonymous"></script>
+
+</body>
+</html>

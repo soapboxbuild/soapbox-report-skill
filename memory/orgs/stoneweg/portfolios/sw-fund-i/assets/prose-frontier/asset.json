@@ -1,0 +1,26 @@
+{
+  "name": "Prose Frontier",
+  "address": "4400 Prairie Crossing, Prosper, TX 75078",
+  "type": "multifamily",
+  "units": 324,
+  "gfa_sqft": 311922,
+  "year_built": 2023,
+  "fuel_profile": "all-electric",
+  "utility_structure": "resident-paid electric, water submetered",
+  "utility_provider": "Grayson Collin Electric Co.",
+  "notes": "New Class A construction. All-electric confirmed from ESG DD report (June 2023). Whole-building data unavailable from utility — Conservice manual meter program required. iApts tech package flagged as non-ENERGY STAR compliant.",
+  "reports": [
+    {
+      "type": "rsra",
+      "date": "2026-06-16",
+      "deal_signal": "Low Risk — Accretive Opportunity",
+      "capex_total": 283500,
+      "capex_per_unit": 875,
+      "baseline_emissions_kgco2_m2yr": 42,
+      "crrem_gap_pct": 8,
+      "data_quality": "Medium"
+    }
+  ],
+  "created": "2026-06-16",
+  "updated": "2026-06-16"
+}

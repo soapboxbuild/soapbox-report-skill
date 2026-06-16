@@ -1,0 +1,19 @@
+{
+  "name": "Stoneweg US",
+  "display_name": "Stoneweg US, LLC",
+  "brand_ref": "stoneweg",
+  "esg_policy_path": null,
+  "green_bond_obligations": null,
+  "lp_reporting_requirements": ["GRESB"],
+  "target_hold_period_years": 5,
+  "primary_asset_types": ["multifamily"],
+  "primary_markets": ["Sun Belt", "Southeast US"],
+  "contact": {
+    "primary": "Tom Stanchak",
+    "title": "Head of Sustainability",
+    "email": "thomas.stanchak@stoneweg.com"
+  },
+  "notes": "Active use case: RSRA for acquisition screening. IMN ESG/AI panel demo partner. ESG policy document pending (Varia US ESG Policy 2026 to be added).",
+  "created": "2026-06-16",
+  "updated": "2026-06-16"
+}
