@@ -1,0 +1,18 @@
+{
+  "name": "soapbox-report-plugins",
+  "owner": {
+    "name": "Soapbox",
+    "url": "https://soapbox.build"
+  },
+  "plugins": [
+    {
+      "name": "soapbox-report",
+      "source": {
+        "source": "github",
+        "repo": "soapboxbuild/soapbox-report-skill"
+      },
+      "description": "Centralized consulting-grade reporting for Soapbox — paginated HTML artifacts with Paged.js, exported to PDF, .pptx, and .xlsx. The shared reporting layer for all Soapbox plugins.",
+      "version": "0.1.0"
+    }
+  ]
+}

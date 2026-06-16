@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rapid Sustainability Risk Assessment</title>
+
+  <!-- Brand fonts — CDN URL from brand.json; fallback to system stack.
+       Google Fonts CSS is dynamically generated per user-agent, so its content
+       varies on every request — SRI cannot be applied without always breaking. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─────────────────────────────────────────────
+       BRAND VARIABLES
+       Injected at render time; fallbacks ensure
+       the file renders correctly as a standalone.
+    ───────────────────────────────────────────── */
+    :root {
+      --color-primary:    var(--brand-color-primary,   #0F1923);
+      --color-secondary:  var(--brand-color-secondary, #2D6A4F);
+      --color-accent:     var(--brand-color-accent,    #F0F4F8);
+      --color-highlight:  var(--brand-color-highlight, #52B788);
+      --color-text:       var(--brand-color-text,      #0F1923);
+      --color-text-muted: var(--brand-color-muted,     #6B7280);
+      --color-border:     var(--brand-color-border,    #E5E7EB);
+      --font-heading:     var(--brand-font-heading,    'Inter', system-ui, sans-serif);
+      --font-body:        var(--brand-font-body,       'Inter', system-ui, sans-serif);
+      --font-mono:        var(--brand-font-mono,       'JetBrains Mono', monospace);
+
+      /* Signal level colors */
+      --signal-low-bg:    #D1FAE5;
+      --signal-low-fg:    #065F46;
+      --signal-low-border:#34D399;
+      --signal-opp-bg:    #ECFDF5;
+      --signal-opp-fg:    #047857;
+      --signal-opp-border:#10B981;
+      --signal-capex-bg:  #FFFBEB;
+      --signal-capex-fg:  #92400E;
+      --signal-capex-border:#F59E0B;
+      --signal-high-bg:   #FEF2F2;
+      --signal-high-fg:   #991B1B;
+      --signal-high-border:#EF4444;
+
+      /* Layout */
+      --page-margin-top:    18mm;
+      --page-margin-side:   16mm;
+      --page-margin-bottom: 20mm;
+    }
+
+    /* ─────────────────────────────────────────────
+       PAGED.JS PAGE RULES
+    ───────────────────────────────────────────── */
+    @page {
+      size: letter;
+      margin: var(--page-margin-top) var(--page-margin-side) var(--page-margin-bottom);
+
+      @top-left {
+        content: "";
+      }
+      @top-right {
+        content: "";
+      }
+      @bottom-left {
+        content: "";
+        font-family: var(--font-body);
+        font-size: 8pt;
+        color: var(--color-text-muted);
+      }
+      @bottom-center {
+        content: "Confidential — " string(orgName);
+        font-family: var(--font-body);
+        font-size: 8pt;
+        color: var(--color-text-muted);
+        text-align: center;
+      }
+      @bottom-right {
+        content: counter(page);
+        font-family: var(--font-body);
+        font-size: 8pt;
+        color: var(--color-text-muted);
+        text-align: right;
+      }
+    }
+
+    /* Cover page — suppress running header/footer, full bleed dark band */
+    @page cover {
+      margin: 0;
+      @bottom-left   { content: none; }
+      @bottom-center { content: none; }
+      @bottom-right  { content: none; }
+    }
+
+    /* Content pages — running header with property name */
+    @page content {
+      @top-left {
+        content: string(propertyName);
+        font-family: var(--font-body);
+        font-size: 8pt;
+        color: var(--color-text-muted);
+        padding-top: 4mm;
+      }
+      @top-right {
+        content: "Rapid Sustainability Risk Assessment";
+        font-family: var(--font-body);
+        font-size: 8pt;
+        color: var(--color-text-muted);
+        padding-top: 4mm;
+      }
+    }
+
+    /* ─────────────────────────────────────────────
+       RESET & BASE
+    ───────────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      font-family: var(--font-body);
+      font-size: 10pt;
+      color: var(--color-text);
+      background: #fff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ─────────────────────────────────────────────
+       COVER PAGE
+    ───────────────────────────────────────────── */
+    .page-cover {
+      page: cover;
+      break-after: page;
+      width: 100%;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: 1fr auto;
+    }
+
+    .cover-header {
+      background: var(--color-primary);
+      color: #fff;
+      padding: 22mm 18mm 18mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 68mm;
+    }
+
+    .cover-header .report-label {
+      font-size: 9pt;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-highlight);
+      margin-bottom: 6mm;
+    }
+
+    .cover-header .property-name {
+      font-size: 28pt;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 4mm;
+      string-set: propertyName content();
+    }
+
+    .cover-header .property-address {
+      font-size: 13pt;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    .cover-body {
+      padding: 12mm 18mm 0;
+      background: #fff;
+    }
+
+    .cover-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6mm 8mm;
+      margin-bottom: 8mm;
+    }
+
+    .cover-meta-item {
+      border-top: 2px solid var(--color-highlight);
+      padding-top: 3mm;
+    }
+
+    .cover-meta-item .meta-label {
+      font-size: 7.5pt;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 1.5mm;
+    }
+
+    .cover-meta-item .meta-value {
+      font-size: 11pt;
+      font-weight: 500;
+      color: var(--color-text);
+    }
+
+    /* Inline deal signal on cover */
+    .cover-signal-row {
+      display: flex;
+      align-items: center;
+      gap: 4mm;
+      padding: 4mm 5mm;
+      border-radius: 3px;
+      margin-bottom: 8mm;
+      border-left-width: 3px;
+      border-left-style: solid;
+    }
+
+    .cover-signal-row .signal-badge {
+      font-size: 9pt;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .cover-signal-row .signal-narrative {
+      font-size: 9.5pt;
+      line-height: 1.4;
+    }
+
+    .cover-footer {
+      padding: 5mm 18mm 8mm;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--color-border);
+      background: #fff;
+    }
+
+    .cover-footer .org-logo {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+    }
+
+    .cover-footer .org-logo .logo-mark {
+      width: 22px;
+      height: 22px;
+      background: var(--color-primary);
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cover-footer .org-logo .logo-mark svg {
+      width: 14px;
+      height: 14px;
+      fill: #fff;
+    }
+
+    .cover-footer .org-name {
+      font-size: 9pt;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .cover-footer .cover-footer-right {
+      text-align: right;
+    }
+
+    .cover-footer .confidential-label {
+      font-size: 7.5pt;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .cover-footer .report-date {
+      font-size: 8pt;
+      color: var(--color-text-muted);
+      margin-top: 0.5mm;
+    }
+
+    /* ─────────────────────────────────────────────
+       CONTENT PAGES
+    ───────────────────────────────────────────── */
+    .page-content {
+      page: content;
+    }
+
+    /* ─────────────────────────────────────────────
+       SECTION STRUCTURE
+    ───────────────────────────────────────────── */
+    .section {
+      break-inside: avoid-page;
+      margin-bottom: 9mm;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      margin-bottom: 4mm;
+      padding-bottom: 2.5mm;
+      border-bottom: 1.5px solid var(--color-border);
+    }
+
+    .section-accent {
+      width: 3px;
+      height: 18px;
+      background: var(--color-secondary);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-family: var(--font-heading);
+      font-size: 14pt;
+      font-weight: 700;
+      color: var(--color-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .section-subtitle {
+      font-size: 8.5pt;
+      color: var(--color-text-muted);
+      margin-left: auto;
+    }
+
+    /* ─────────────────────────────────────────────
+       TABLES
+    ───────────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9pt;
+    }
+
+    thead th {
+      background: var(--color-primary);
+      color: #fff;
+      font-weight: 600;
+      font-size: 8pt;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 3mm 4mm;
+      text-align: left;
+    }
+
+    thead th:first-child {
+      border-radius: 2px 0 0 0;
+    }
+
+    thead th:last-child {
+      border-radius: 0 2px 0 0;
+    }
+
+    tbody tr:nth-child(odd) {
+      background: var(--color-accent);
+    }
+
+    tbody tr:nth-child(even) {
+      background: #fff;
+    }
+
+    tbody td {
+      padding: 2.5mm 4mm;
+      vertical-align: top;
+      line-height: 1.4;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Total row */
+    tbody tr.row-total td {
+      background: var(--color-primary);
+      color: #fff;
+      font-weight: 700;
+      font-size: 9pt;
+      border-top: none;
+      border-bottom: none;
+    }
+
+    /* Column alignment helpers */
+    td.align-right, th.align-right { text-align: right; }
+    td.align-center, th.align-center { text-align: center; }
+    td.text-muted { color: var(--color-text-muted); font-size: 8.5pt; }
+
+    /* Timing badge */
+    .timing-badge {
+      display: inline-block;
+      font-size: 7.5pt;
+      font-weight: 600;
+      padding: 0.8mm 2mm;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+
+    .timing-early {
+      background: #DBEAFE;
+      color: #1E40AF;
+    }
+
+    .timing-mid {
+      background: #FEF3C7;
+      color: #92400E;
+    }
+
+    .timing-late {
+      background: #FCE7F3;
+      color: #9D174D;
+    }
+
+    .timing-ongoing {
+      background: #F3F4F6;
+      color: #374151;
+    }
+
+    /* Incentive pill */
+    .incentive-pill {
+      display: inline-block;
+      font-size: 7.5pt;
+      font-weight: 500;
+      padding: 0.5mm 2mm;
+      border-radius: 10px;
+      border: 1px solid var(--color-highlight);
+      color: var(--color-secondary);
+      white-space: nowrap;
+      margin-bottom: 1mm;
+    }
+
+    /* ─────────────────────────────────────────────
+       EMISSIONS PROFILE — two-column key/value
+    ───────────────────────────────────────────── */
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 36mm 1fr;
+      row-gap: 0;
+    }
+
+    .profile-row {
+      display: contents;
+    }
+
+    .profile-row .profile-key,
+    .profile-row .profile-value {
+      padding: 2.5mm 4mm;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: top;
+      font-size: 9pt;
+      line-height: 1.45;
+    }
+
+    .profile-row:last-child .profile-key,
+    .profile-row:last-child .profile-value {
+      border-bottom: none;
+    }
+
+    .profile-row:nth-child(odd) .profile-key,
+    .profile-row:nth-child(odd) .profile-value {
+      background: var(--color-accent);
+    }
+
+    .profile-key {
+      font-weight: 600;
+      font-size: 8.5pt;
+      color: var(--color-primary);
+      white-space: nowrap;
+    }
+
+    .profile-value .profile-description {
+      font-size: 8pt;
+      color: var(--color-text-muted);
+      margin-top: 0.8mm;
+    }
+
+    /* Regulation risk indicator */
+    .reg-high { color: #B91C1C; font-weight: 600; }
+    .reg-moderate { color: #B45309; font-weight: 600; }
+    .reg-low { color: #065F46; font-weight: 600; }
+
+    /* ─────────────────────────────────────────────
+       DEAL SIGNAL BOX
+    ───────────────────────────────────────────── */
+    .signal-box {
+      border-radius: 4px;
+      padding: 5mm 6mm;
+      border-left-width: 4px;
+      border-left-style: solid;
+      break-inside: avoid;
+    }
+
+    .signal-box.signal-low {
+      background: var(--signal-low-bg);
+      border-left-color: var(--signal-low-border);
+    }
+
+    .signal-box.signal-opportunity {
+      background: var(--signal-opp-bg);
+      border-left-color: var(--signal-opp-border);
+    }
+
+    .signal-box.signal-capex {
+      background: var(--signal-capex-bg);
+      border-left-color: var(--signal-capex-border);
+    }
+
+    .signal-box.signal-high {
+      background: var(--signal-high-bg);
+      border-left-color: var(--signal-high-border);
+    }
+
+    .signal-box-header {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      margin-bottom: 3mm;
+    }
+
+    .signal-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 11pt;
+      font-weight: 700;
+    }
+
+    .signal-low .signal-icon    { background: var(--signal-low-border);    color: #fff; }
+    .signal-opportunity .signal-icon { background: var(--signal-opp-border); color: #fff; }
+    .signal-capex .signal-icon  { background: var(--signal-capex-border);  color: #fff; }
+    .signal-high .signal-icon   { background: var(--signal-high-border);   color: #fff; }
+
+    .signal-level-label {
+      font-size: 12pt;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .signal-low .signal-level-label    { color: var(--signal-low-fg);   }
+    .signal-opportunity .signal-level-label { color: var(--signal-opp-fg); }
+    .signal-capex .signal-level-label  { color: var(--signal-capex-fg); }
+    .signal-high .signal-level-label   { color: var(--signal-high-fg);  }
+
+    .signal-narrative-text {
+      font-size: 10pt;
+      line-height: 1.55;
+    }
+
+    .signal-low .signal-narrative-text    { color: var(--signal-low-fg);   }
+    .signal-opportunity .signal-narrative-text { color: var(--signal-opp-fg); }
+    .signal-capex .signal-narrative-text  { color: var(--signal-capex-fg); }
+    .signal-high .signal-narrative-text   { color: var(--signal-high-fg);  }
+
+    /* ─────────────────────────────────────────────
+       SELLER QUESTIONS
+    ───────────────────────────────────────────── */
+    .seller-questions-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .seller-questions-list li {
+      display: flex;
+      gap: 3.5mm;
+      padding: 3mm 0;
+      border-bottom: 1px solid var(--color-border);
+      font-size: 9.5pt;
+      line-height: 1.5;
+    }
+
+    .seller-questions-list li:last-child {
+      border-bottom: none;
+    }
+
+    .seller-q-num {
+      width: 6mm;
+      height: 6mm;
+      border-radius: 50%;
+      background: var(--color-secondary);
+      color: #fff;
+      font-size: 7.5pt;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 0.5mm;
+    }
+
+    /* ─────────────────────────────────────────────
+       CONFIDENCE NOTE
+    ───────────────────────────────────────────── */
+    .confidence-note {
+      margin-top: 8mm;
+      padding: 3mm 4mm;
+      background: var(--color-accent);
+      border: 1px solid var(--color-border);
+      border-radius: 3px;
+      font-size: 8.5pt;
+      color: var(--color-text-muted);
+      line-height: 1.45;
+    }
+
+    .confidence-note strong {
+      color: var(--color-text);
+      font-weight: 600;
+    }
+
+    /* ─────────────────────────────────────────────
+       SECTION PAGE BREAKS
+    ───────────────────────────────────────────── */
+    .break-before {
+      break-before: page;
+    }
+
+    /* ─────────────────────────────────────────────
+       DISPOSITION MODE BANNER
+    ───────────────────────────────────────────── */
+    .disposition-banner {
+      background: var(--color-secondary);
+      color: #fff;
+      text-align: center;
+      font-size: 8.5pt;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2mm 4mm;
+      margin-bottom: 5mm;
+    }
+
+    /* ─────────────────────────────────────────────
+       PAGE-STRING ANCHORS (Paged.js named strings)
+    ───────────────────────────────────────────── */
+    #org-name-anchor {
+      string-set: orgName content();
+      display: none;
+    }
+
+    /* ─────────────────────────────────────────────
+       UTILITY
+    ───────────────────────────────────────────── */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ──────────────────────────────────────────────────────────────────
+     REPORT DATA — replace this script block with actual report data
+     at render time, or populate via the Aris skill output.
+────────────────────────────────────────────────────────────────────── -->
+<script id="report-data" type="application/json">
+{
+  "property": {
+    "name": "Cascade Commons",
+    "address": "2815 NE 45th Street, Portland, OR 97213",
+    "type": "multifamily",
+    "units": 148,
+    "year_built": 1988,
+    "zip": "97213"
+  },
+  "decarb_plan": [
+    {
+      "measure": "LED lighting retrofit — common areas & exterior",
+      "timing": "Early Yr1",
+      "capex_per_unit": 300,
+      "capex_total": 44400,
+      "incentive_program": "PGE Energy Trust rebates",
+      "financial_impact_type": "Common area expense reduction",
+      "financial_impact_timing": "Annual ongoing",
+      "financial_impact_value": "~$6,200/yr"
+    },
+    {
+      "measure": "Smart thermostats — all units",
+      "timing": "Early Yr2",
+      "capex_per_unit": 400,
+      "capex_total": 59200,
+      "incentive_program": "Energy Trust of Oregon — $50/unit rebate",
+      "financial_impact_type": "Revenue lift",
+      "financial_impact_timing": "Annual ongoing",
+      "financial_impact_value": "+0.5% rent potential (reduced resident energy burden)"
+    },
+    {
+      "measure": "Rooftop solar — amenity building & carports",
+      "timing": "Early Yr2",
+      "capex_per_unit": 400,
+      "capex_total": 59200,
+      "incentive_program": "ITC §48E — 30% tax credit; Oregon Residential Energy Tax Credit",
+      "financial_impact_type": "ITC tax credit",
+      "financial_impact_timing": "Year 2 one-time",
+      "financial_impact_value": "~$17,760 ITC + ~$1,800/yr common area electricity savings"
+    },
+    {
+      "measure": "EV charging — 8 Level-2 stations",
+      "timing": "Early Yr2",
+      "capex_per_unit": 150,
+      "capex_total": 22200,
+      "incentive_program": "IRS §30C Alternative Fuel Vehicle Credit — 30% of cost",
+      "financial_impact_type": "Revenue lift",
+      "financial_impact_timing": "Annual ongoing",
+      "financial_impact_value": "Amenity premium; optional charging revenue $3–8K/yr"
+    },
+    {
+      "measure": "Heat pump water heater — central DHW plant",
+      "timing": "Mid Yr3",
+      "capex_per_unit": 700,
+      "capex_total": 103600,
+      "incentive_program": "IRA §25C (if tenant-owned) or §48E; Energy Trust of Oregon rebate",
+      "financial_impact_type": "Common area expense reduction",
+      "financial_impact_timing": "Annual ongoing from Yr3",
+      "financial_impact_value": "~$11,400/yr gas cost savings (est.)"
+    },
+    {
+      "measure": "Envelope improvements — window weatherization, attic insulation",
+      "timing": "Late Yr4-5",
+      "capex_per_unit": 1500,
+      "capex_total": 222000,
+      "incentive_program": "Energy Trust of Oregon deep energy retrofit program",
+      "financial_impact_type": "Common area expense reduction",
+      "financial_impact_timing": "Annual ongoing from Yr5",
+      "financial_impact_value": "~8–12% total energy reduction; green certification pathway"
+    }
+  ],
+  "decarb_plan_total": {
+    "capex_per_unit": 3450,
+    "capex_total": 510600
+  },
+  "emissions_profile": {
+    "fuel_profile": "Dual-fuel — natural gas heat & DHW; resident electric cooling",
+    "utility_structure": "Resident electric submetered; landlord pays common area electric + gas",
+    "baseline_emissions": "~68 kgCO₂e/m²yr (est., dual-fuel Midwest/Northwest benchmark)",
+    "crrem_pathway": "~22% above 2030 target — Yr3 HPWH + Yr5 envelope measures close the gap",
+    "regulation": "Moderate — Oregon HB 2021 Clean Electricity Plan; Portland Climate Emergency Declaration. No active BPS fine schedule through hold period — monitor Portland Building Performance Standards rulemaking expected 2027–2028."
+  },
+  "deal_signal": {
+    "level": "Moderate Risk — Opportunity",
+    "narrative": "Gas exposure is real but manageable — dual-fuel profile requires ~$103K mid-hold fuel switching (Yr3 HPWH) not currently in the seller's capital plan; size $3,450/unit into the model. Solar + LED + smart controls are immediately NOI-accretive and position the asset for Fannie Mae Green Rewards at acquisition financing (~12–15 bps rate relief on a $14M note = ~$25K/yr in debt service savings)."
+  },
+  "seller_questions": [
+    "Please provide the last 24 months of utility bills for gas and common area electric — we need actual consumption to verify benchmark emissions estimates before PSA.",
+    "Has the City of Portland issued any preliminary guidance or notices related to the expected 2027–2028 Building Performance Standards rulemaking that references this property or address?",
+    "What is the current status of the central gas boiler — age, last service, any documented deferred maintenance? (Relevant to Yr3 HPWH replacement sizing.)"
+  ],
+  "data_quality": "Medium — confirmed fuel profile; CapEx benchmarked",
+  "prepared_by": "Aris / Audette Sustainability Intelligence",
+  "prepared_for": "Cascade Capital Partners — Acquisitions",
+  "report_date": "2026-06-16",
+  "disposition_mode": false
+}
+</script>
+
+<!-- Paged.js populates AFTER our populateReport() runs via window.PagedConfig -->
+<script>
+  window.PagedConfig = {
+    auto: true,
+    before: function() { return populateReport(); }
+  };
+
+  function populateReport() {
+    var dataEl = document.getElementById('report-data');
+    if (!dataEl) return;
+
+    var data;
+    try {
+      data = JSON.parse(dataEl.textContent);
+    } catch(e) {
+      console.error('RSRA: failed to parse report-data JSON', e);
+      return;
+    }
+
+    var prop   = data.property     || {};
+    var plan   = data.decarb_plan  || [];
+    var totals = data.decarb_plan_total || {};
+    var emiss  = data.emissions_profile || {};
+    var signal = data.deal_signal  || {};
+    var qs     = data.seller_questions || [];
+    var isDisp = !!data.disposition_mode;
+
+    /* ── Helpers ── */
+    function safe(val) {
+      return (val !== undefined && val !== null && val !== '') ? String(val) : '—';
+    }
+
+    function fmtCurrency(n) {
+      if (typeof n !== 'number') return '—';
+      if (n >= 1000000) return '$' + (n / 1000000).toFixed(2).replace(/\.?0+$/, '') + 'M';
+      if (n >= 1000)    return '$' + n.toLocaleString('en-US');
+      return '$' + n.toFixed(0);
+    }
+
+    function signalClass(level) {
+      if (!level) return 'signal-low';
+      if (level === 'Low Risk')                        return 'signal-low';
+      if (level === 'Moderate Risk — Opportunity')     return 'signal-opportunity';
+      if (level === 'Moderate Risk — CapEx')           return 'signal-capex';
+      if (level === 'High Transition Risk')            return 'signal-high';
+      return 'signal-low';
+    }
+
+    function signalIcon(level) {
+      if (level === 'Low Risk')                        return '✓';
+      if (level === 'Moderate Risk — Opportunity')     return '↗';
+      if (level === 'Moderate Risk — CapEx')           return '△';
+      if (level === 'High Transition Risk')            return '!';
+      return '?';
+    }
+
+    function timingClass(t) {
+      if (!t) return 'timing-ongoing';
+      if (t.startsWith('Early')) return 'timing-early';
+      if (t.startsWith('Mid'))   return 'timing-mid';
+      if (t.startsWith('Late'))  return 'timing-late';
+      return 'timing-ongoing';
+    }
+
+    function regClass(reg) {
+      if (!reg) return '';
+      var lower = reg.toLowerCase();
+      if (lower.startsWith('high') || lower.includes('high —')) return 'reg-high';
+      if (lower.startsWith('moderate')) return 'reg-moderate';
+      return 'reg-low';
+    }
+
+    /* ── Named string anchors for Paged.js ── */
+    setText('org-name-anchor', safe(data.prepared_for || data.prepared_by || 'Confidential'));
+
+    /* ── Cover ── */
+    setText('cover-property-name', safe(prop.name));
+    setText('cover-property-address', safe(prop.address));
+
+    setText('cover-meta-type',   safe(capitalise(prop.type)));
+    setText('cover-meta-units',  prop.units  ? prop.units + ' units'   : (prop.gfa_sqft ? fmtSqft(prop.gfa_sqft) : '—'));
+    setText('cover-meta-built',  prop.year_built ? String(prop.year_built) : '—');
+    setText('cover-meta-for',    safe(data.prepared_for));
+    setText('cover-meta-by',     safe(data.prepared_by));
+    setText('cover-meta-date',   safe(data.report_date));
+
+    /* Cover signal row */
+    var coverSignalRow = document.getElementById('cover-signal-row');
+    if (coverSignalRow && signal.level) {
+      coverSignalRow.className = 'cover-signal-row ' + signalClass(signal.level);
+      coverSignalRow.querySelector('.signal-badge').textContent = signal.level;
+      coverSignalRow.querySelector('.signal-narrative').textContent = safe(signal.narrative);
+    }
+
+    /* Disposition banner */
+    if (isDisp) {
+      var banner = document.getElementById('disposition-banner');
+      if (banner) banner.style.display = '';
+    }
+
+    /* ── Decarb Plan table ── */
+    var tbody = document.getElementById('decarb-tbody');
+    if (tbody) {
+      var isMF = prop.type === 'multifamily' || prop.type === 'senior-living' || prop.type === 'student-housing';
+      var html = '';
+      plan.forEach(function(m) {
+        var incentives = m.incentive_program
+          ? m.incentive_program.split(';').map(function(p) {
+              return '<span class="incentive-pill">' + p.trim() + '</span>';
+            }).join(' ')
+          : '—';
+        var finImpact = '';
+        if (m.financial_impact_type)   finImpact += '<div>' + safe(m.financial_impact_type) + '</div>';
+        if (m.financial_impact_timing) finImpact += '<div class="text-muted" style="font-size:8pt;color:var(--color-text-muted)">' + safe(m.financial_impact_timing) + '</div>';
+        if (m.financial_impact_value)  finImpact += '<div style="font-weight:600;color:var(--color-secondary)">' + safe(m.financial_impact_value) + '</div>';
+
+        html += '<tr>';
+        html += '<td>' + safe(m.measure) + '</td>';
+        html += '<td><span class="timing-badge ' + timingClass(m.timing) + '">' + safe(m.timing) + '</span></td>';
+        if (isMF) {
+          html += '<td class="align-right">' + (m.capex_per_unit != null ? fmtCurrency(m.capex_per_unit) : '—') + '</td>';
+        }
+        html += '<td class="align-right">' + fmtCurrency(m.capex_total) + '</td>';
+        html += '<td>' + incentives + '</td>';
+        html += '<td>' + (finImpact || '—') + '</td>';
+        html += '</tr>';
+      });
+      tbody.innerHTML = html;
+
+      /* Totals row */
+      var totalRow = document.getElementById('decarb-total-row');
+      if (totalRow) {
+        /* Compute totals if not provided */
+        var planTotal = totals.capex_total;
+        if (!planTotal) {
+          planTotal = plan.reduce(function(s, m) { return s + (m.capex_total || 0); }, 0);
+        }
+        var planPerUnit = totals.capex_per_unit;
+        if (!planPerUnit && isMF && prop.units) {
+          planPerUnit = planTotal / prop.units;
+        }
+
+        var totalCells = '';
+        totalCells += '<td>Total Estimated CapEx</td>';
+        totalCells += '<td></td>';
+        if (isMF) {
+          totalCells += '<td class="align-right">' + (planPerUnit ? fmtCurrency(Math.round(planPerUnit)) + '/unit' : '—') + '</td>';
+        }
+        totalCells += '<td class="align-right">' + fmtCurrency(planTotal) + '</td>';
+        totalCells += '<td colspan="2"></td>';
+        totalRow.innerHTML = totalCells;
+
+        /* Show/hide the $/unit column header */
+        var unitColHeader = document.getElementById('decarb-unit-col-header');
+        if (unitColHeader) {
+          unitColHeader.style.display = isMF ? '' : 'none';
+        }
+      }
+    }
+
+    /* ── Emissions Profile ── */
+    setHtml('profile-fuel',      '<strong>' + safe(emiss.fuel_profile) + '</strong>');
+    setHtml('profile-utility',   safe(emiss.utility_structure));
+    setHtml('profile-emissions', safe(emiss.baseline_emissions));
+
+    if (emiss.crrem_pathway) {
+      setHtml('profile-crrem', safe(emiss.crrem_pathway));
+      showEl('profile-crrem-row');
+    }
+
+    var regHtml = '';
+    if (emiss.regulation) {
+      var rc = regClass(emiss.regulation);
+      var parts = emiss.regulation.split(' — ');
+      var regPrefix = parts.length > 1 ? parts[0] : '';
+      var regBody   = parts.length > 1 ? parts.slice(1).join(' — ') : emiss.regulation;
+      if (regPrefix && rc) {
+        regHtml = '<span class="' + rc + '">' + regPrefix + '</span>' + (regBody ? ' — ' + regBody : '');
+      } else {
+        regHtml = safe(emiss.regulation);
+      }
+    } else {
+      regHtml = '—';
+    }
+    setHtml('profile-regulation', regHtml);
+
+    /* ── Deal Signal ── */
+    var signalBox = document.getElementById('signal-box');
+    if (signalBox && signal.level) {
+      signalBox.className = 'signal-box ' + signalClass(signal.level);
+      signalBox.querySelector('.signal-icon').textContent = signalIcon(signal.level);
+      signalBox.querySelector('.signal-level-label').textContent = safe(signal.level);
+      signalBox.querySelector('.signal-narrative-text').textContent = safe(signal.narrative);
+    }
+
+    /* ── Seller Questions ── */
+    var sellerSection = document.getElementById('seller-questions-section');
+    if (sellerSection) {
+      if (qs.length > 0) {
+        var qsList = document.getElementById('seller-questions-list');
+        if (qsList) {
+          var qsHtml = '';
+          qs.forEach(function(q, i) {
+            qsHtml += '<li><span class="seller-q-num">' + (i + 1) + '</span><span>' + safe(q) + '</span></li>';
+          });
+          qsList.innerHTML = qsHtml;
+        }
+        sellerSection.style.display = '';
+      } else {
+        sellerSection.style.display = 'none';
+      }
+    }
+
+    /* ── Confidence note ── */
+    if (data.data_quality) {
+      var confNote = document.getElementById('confidence-note');
+      if (confNote) {
+        confNote.innerHTML = '<strong>Data quality:</strong> ' + safe(data.data_quality);
+      }
+    }
+
+    /* ── Disposition mode ── */
+    if (isDisp) {
+      var dispBanner = document.getElementById('disposition-banner');
+      if (dispBanner) dispBanner.style.display = '';
+    }
+  }
+
+  /* ── DOM helpers ── */
+  function setText(id, val) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  function setHtml(id, val) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = val;
+  }
+
+  function showEl(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = '';
+  }
+
+  function capitalise(s) {
+    if (!s) return '';
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  function fmtSqft(n) {
+    if (typeof n !== 'number') return '—';
+    return n.toLocaleString('en-US') + ' sqft';
+  }
+</script>
+
+<!-- ─────────────────────────────────────
+     NAMED STRING ANCHOR (Paged.js)
+────────────────────────────────────── -->
+<span id="org-name-anchor" aria-hidden="true"></span>
+
+<!-- ══════════════════════════════════════
+     PAGE 1: COVER
+════════════════════════════════════════ -->
+<div class="page-cover">
+
+  <!-- Disposition banner — hidden by default, shown by JS -->
+  <div id="disposition-banner" class="disposition-banner" style="display:none">
+    Sustainability Passport — Disposition / Exit
+  </div>
+
+  <div class="cover-header">
+    <div class="report-label">Rapid Sustainability Risk Assessment</div>
+    <div class="cover-header-inner">
+      <h1 class="property-name" id="cover-property-name">Property Name</h1>
+      <div class="property-address" id="cover-property-address">Address</div>
+    </div>
+  </div>
+
+  <div class="cover-body">
+
+    <!-- Property meta grid -->
+    <div class="cover-meta-grid">
+      <div class="cover-meta-item">
+        <div class="meta-label">Asset Type</div>
+        <div class="meta-value" id="cover-meta-type">—</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="meta-label">Size</div>
+        <div class="meta-value" id="cover-meta-units">—</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="meta-label">Year Built</div>
+        <div class="meta-value" id="cover-meta-built">—</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="meta-label">Prepared For</div>
+        <div class="meta-value" id="cover-meta-for">—</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="meta-label">Prepared By</div>
+        <div class="meta-value" id="cover-meta-by">—</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="meta-label">Report Date</div>
+        <div class="meta-value" id="cover-meta-date">—</div>
+      </div>
+    </div>
+
+    <!-- Deal signal summary on cover -->
+    <div id="cover-signal-row" class="cover-signal-row signal-low">
+      <span class="signal-badge">—</span>
+      <span class="signal-narrative">—</span>
+    </div>
+
+  </div>
+
+  <!-- Cover footer -->
+  <div class="cover-footer">
+    <div class="org-logo">
+      <div class="logo-mark">
+        <!-- Minimal inline wordmark; replaced by org logo at render time -->
+        <svg viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="0" y="0" width="6" height="6" rx="1"/>
+          <rect x="8" y="0" width="6" height="6" rx="1"/>
+          <rect x="0" y="8" width="6" height="6" rx="1"/>
+          <rect x="8" y="8" width="6" height="6" rx="1"/>
+        </svg>
+      </div>
+      <span class="org-name" id="cover-footer-org">Aris · Sustainability Intelligence</span>
+    </div>
+    <div class="cover-footer-right">
+      <div class="confidential-label">Confidential</div>
+      <div class="report-date" id="cover-footer-date"></div>
+    </div>
+  </div>
+
+</div><!-- /page-cover -->
+
+
+<!-- ══════════════════════════════════════
+     PAGE 2+: CONTENT
+════════════════════════════════════════ -->
+<div class="page-content">
+
+  <!-- ── SECTION 1: DECARB PLAN ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Decarbonization Capital Plan</h2>
+      <span class="section-subtitle">Itemized measures for the capital model</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:28%">Measure</th>
+          <th style="width:10%">Timing</th>
+          <th id="decarb-unit-col-header" class="align-right" style="width:9%">$/Unit</th>
+          <th class="align-right" style="width:8%">Total</th>
+          <th style="width:24%">Incentive Programs</th>
+          <th style="width:21%">Financial Impact</th>
+        </tr>
+      </thead>
+      <tbody id="decarb-tbody">
+        <!-- Populated by JS -->
+      </tbody>
+      <tfoot>
+        <tr class="row-total" id="decarb-total-row">
+          <!-- Populated by JS -->
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- ── SECTION 2: ENERGY & EMISSIONS PROFILE ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Energy &amp; Emissions Profile</h2>
+      <span class="section-subtitle">Carbon characterization &amp; regulatory exposure</span>
+    </div>
+
+    <div class="profile-grid">
+      <div class="profile-row">
+        <div class="profile-key">Fuel Profile</div>
+        <div class="profile-value" id="profile-fuel">—</div>
+      </div>
+      <div class="profile-row">
+        <div class="profile-key">Utility Structure</div>
+        <div class="profile-value" id="profile-utility">—</div>
+      </div>
+      <div class="profile-row">
+        <div class="profile-key">Baseline Emissions</div>
+        <div class="profile-value" id="profile-emissions">—</div>
+      </div>
+      <!-- CRREM row hidden by default; shown by JS when data present -->
+      <div class="profile-row" id="profile-crrem-row" style="display:none">
+        <div class="profile-key">vs. CRREM Pathway</div>
+        <div class="profile-value" id="profile-crrem">—</div>
+      </div>
+      <div class="profile-row">
+        <div class="profile-key">Regulation</div>
+        <div class="profile-value" id="profile-regulation">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 3: DEAL SIGNAL ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Deal Signal</h2>
+      <span class="section-subtitle">Investment recommendation</span>
+    </div>
+
+    <div id="signal-box" class="signal-box signal-low">
+      <div class="signal-box-header">
+        <div class="signal-icon">?</div>
+        <div class="signal-level-label">—</div>
+      </div>
+      <div class="signal-narrative-text">—</div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 4: SELLER QUESTIONS ── -->
+  <div id="seller-questions-section" class="section" style="display:none">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Seller Questions</h2>
+      <span class="section-subtitle">Items requiring verification before PSA</span>
+    </div>
+
+    <ol class="seller-questions-list" id="seller-questions-list">
+      <!-- Populated by JS -->
+    </ol>
+  </div>
+
+  <!-- ── CONFIDENCE NOTE ── -->
+  <div class="confidence-note" id="confidence-note">
+    <strong>Data quality:</strong> —
+  </div>
+
+</div><!-- /page-content -->
+
+
+<!-- Paged.js — loaded LAST so PagedConfig.before fires before pagination.
+     Pinned to 0.4.3; SRI hash verified against two independent fetches. -->
+<script
+  src="https://unpkg.com/pagedjs@0.4.3/dist/paged.polyfill.js"
+  integrity="sha384-JkjBt3FPbcQ3WBc3qp+maUIw8YLoZxNNj8H+tn73mljkC1ba8aEPWlgwfCRPpAxV"
+  crossorigin="anonymous"></script>
+
+</body>
+</html>

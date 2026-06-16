@@ -1,0 +1,9 @@
+{
+  "name": "soapbox-report",
+  "version": "0.1.0",
+  "description": "Centralized consulting-grade reporting for Soapbox — paginated HTML artifacts with Paged.js for interactive review, exported to PDF via Playwright, .pptx, and .xlsx. Called by all other Soapbox plugins. Replaces audette-plugins/skills/report.",
+  "author": { "name": "Soapbox", "url": "https://soapbox.build" },
+  "license": "Apache-2.0",
+  "skills": ["skills"],
+  "agents": ["agents"]
+}
