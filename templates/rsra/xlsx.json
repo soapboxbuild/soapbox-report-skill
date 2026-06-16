@@ -1,0 +1,191 @@
+{
+  "$comment": "RSRA Excel companion spec — controls exact sheet names, column order, formats, and charts for Tom's acquisition underwriting team. Sheets are designed to paste directly into deal model tabs.",
+
+  "filename_pattern": "RSRA_{asset}_{YYYY-MM-DD}.xlsx",
+
+  "sheets": [
+
+    {
+      "id": "summary",
+      "name": "RSRA Summary",
+      "order": 1,
+      "type": "key_value",
+      "description": "Cover-page snapshot — one row per key metric. Designed to paste into a deal overview tab.",
+      "rows": [
+        { "label": "Property",          "data_path": "property.name" },
+        { "label": "Address",           "data_path": "property.address" },
+        { "label": "Asset Type",        "data_path": "property.type" },
+        { "label": "Units",             "data_path": "property.units",   "format": "#,##0", "omit_if_null": true },
+        { "label": "GFA (sqft)",        "data_path": "property.gfa_sqft","format": "#,##0", "omit_if_null": true },
+        { "label": "Year Built",        "data_path": "property.year_built" },
+        { "label": "Report Date",       "data_path": "report_date" },
+        { "label": "Prepared By",       "data_path": "prepared_by" },
+        { "label": "Prepared For",      "data_path": "prepared_for" },
+        { "label": "",                  "type": "spacer" },
+        { "label": "Deal Signal",       "data_path": "deal_signal.level",    "style": "signal_level" },
+        { "label": "Signal Narrative",  "data_path": "deal_signal.narrative","style": "wrap", "row_height": 60 },
+        { "label": "",                  "type": "spacer" },
+        { "label": "Total CapEx",       "data_path": "decarb_plan_total.capex_total",    "format": "$#,##0" },
+        { "label": "Total CapEx / Unit","data_path": "decarb_plan_total.capex_per_unit", "format": "$#,##0", "omit_if_null": true },
+        { "label": "",                  "type": "spacer" },
+        { "label": "Fuel Profile",      "data_path": "emissions_profile.fuel_profile" },
+        { "label": "Utility Structure", "data_path": "emissions_profile.utility_structure" },
+        { "label": "Baseline Emissions","data_path": "emissions_profile.baseline_emissions" },
+        { "label": "vs. CRREM Pathway", "data_path": "emissions_profile.crrem_pathway", "omit_if_null": true },
+        { "label": "Regulatory Exposure","data_path": "emissions_profile.regulation" },
+        { "label": "Data Quality",      "data_path": "data_quality" }
+      ],
+      "columns": [
+        { "header": "Field",  "width": 24 },
+        { "header": "Value",  "width": 64, "wrap": true }
+      ],
+      "style": {
+        "label_column": { "bold": true, "fill": "accent" },
+        "value_column": { "fill": "none" },
+        "signal_level_row": {
+          "bold": true,
+          "fill_by_value": {
+            "Low Risk":                  "#D1FAE5",
+            "Moderate Risk — Opportunity": "#ECFDF5",
+            "Moderate Risk — CapEx":     "#FFFBEB",
+            "High Transition Risk":      "#FEE2E2"
+          }
+        }
+      }
+    },
+
+    {
+      "id": "decarb_plan",
+      "name": "Decarb Plan",
+      "order": 2,
+      "type": "table",
+      "description": "Phased capital plan — formatted to paste directly into the CapEx tab of the acquisition model.",
+      "data_path": "decarb_plan",
+      "columns": [
+        { "header": "Measure",              "data_key": "measure",                "width": 36, "wrap": true },
+        { "header": "Timing",               "data_key": "timing",                 "width": 14 },
+        { "header": "CapEx / Unit",         "data_key": "capex_per_unit",         "width": 14, "format": "$#,##0",   "omit_if_all_null": true },
+        { "header": "Total CapEx ($)",      "data_key": "capex_total",            "width": 16, "format": "$#,##0" },
+        { "header": "Incentive Program",    "data_key": "incentive_program",      "width": 36, "wrap": true },
+        { "header": "Financial Impact",     "data_key": "financial_impact_type",  "width": 28 },
+        { "header": "Impact Timing",        "data_key": "financial_impact_timing","width": 18 },
+        { "header": "Est. Impact",          "data_key": "financial_impact_value", "width": 22 }
+      ],
+      "totals_row": {
+        "label_column": "measure",
+        "label": "TOTAL",
+        "sum_columns": ["capex_per_unit", "capex_total"],
+        "format": "$#,##0",
+        "bold": true,
+        "fill": "primary"
+      },
+      "conditional_formatting": {
+        "timing": {
+          "Early Yr1":  { "fill": "#D1FAE5" },
+          "Early Yr2":  { "fill": "#ECFDF5" },
+          "Mid Yr3":    { "fill": "#FFFBEB" },
+          "Late Yr4-5": { "fill": "#FEF3C7" },
+          "Ongoing":    { "fill": "#F3F4F6" }
+        }
+      },
+      "charts": [
+        {
+          "id": "capex_by_timing",
+          "type": "BarChart",
+          "title": "CapEx by Phase",
+          "x_axis": "timing",
+          "y_axis": "capex_total",
+          "aggregate": "sum",
+          "y_axis_label": "Total CapEx ($)",
+          "series_color": "primary",
+          "placement": "right_of_table",
+          "width_cols": 8,
+          "height_rows": 16
+        }
+      ],
+      "freeze_panes": "B2",
+      "note": "CapEx figures are estimates. Verify with local contractors before PSA. Incentive values subject to tax advisor confirmation."
+    },
+
+    {
+      "id": "emissions_profile",
+      "name": "Emissions Profile",
+      "order": 3,
+      "type": "key_value",
+      "description": "Energy and carbon profile — supports model assumptions for utility expense and regulatory risk.",
+      "rows": [
+        { "label": "Fuel Profile",        "data_path": "emissions_profile.fuel_profile" },
+        { "label": "Utility Structure",   "data_path": "emissions_profile.utility_structure", "style": "wrap", "row_height": 45 },
+        { "label": "Baseline Emissions",  "data_path": "emissions_profile.baseline_emissions" },
+        { "label": "EUI (kBtu/sqft/yr)", "data_path": "emissions_profile.eui_kbtu",          "format": "#,##0.0", "omit_if_null": true },
+        { "label": "ENERGY STAR Score",   "data_path": "emissions_profile.energy_star_score", "omit_if_null": true },
+        { "label": "vs. CRREM Pathway",   "data_path": "emissions_profile.crrem_pathway",     "omit_if_null": true, "style": "wrap", "row_height": 45 },
+        { "label": "Regulatory Exposure", "data_path": "emissions_profile.regulation",         "style": "wrap", "row_height": 60 }
+      ],
+      "columns": [
+        { "header": "Category", "width": 24 },
+        { "header": "Output",   "width": 72, "wrap": true }
+      ],
+      "style": {
+        "label_column": { "bold": true, "fill": "accent" }
+      }
+    },
+
+    {
+      "id": "seller_questions",
+      "name": "Seller Questions",
+      "order": 4,
+      "type": "list",
+      "description": "Targeted seller questions — include in LOI process communications. Omitted from workbook if no questions were generated.",
+      "data_path": "seller_questions",
+      "omit_if_empty": true,
+      "columns": [
+        { "header": "#",        "type": "row_index", "width": 5  },
+        { "header": "Question", "data_key": "_value", "width": 90, "wrap": true }
+      ],
+      "row_height": 50,
+      "header_note": "Review with counsel before sending. These questions are flagged because they may materially affect value — not a comprehensive diligence checklist."
+    },
+
+    {
+      "id": "incentives_lookup",
+      "name": "Incentives",
+      "order": 5,
+      "type": "table",
+      "description": "Incentive programs referenced in the Decarb Plan — expands the brief descriptions into a reference sheet for the deal team and tax advisors.",
+      "data_path": "decarb_plan",
+      "filter": { "field": "incentive_program", "not_null": true },
+      "columns": [
+        { "header": "Measure",           "data_key": "measure",           "width": 36 },
+        { "header": "Program",           "data_key": "incentive_program",  "width": 40, "wrap": true },
+        { "header": "Impact Type",       "data_key": "financial_impact_type",   "width": 28 },
+        { "header": "Est. Benefit",      "data_key": "financial_impact_value",  "width": 22 },
+        { "header": "Timing",            "data_key": "financial_impact_timing", "width": 18 }
+      ],
+      "footer_note": "IRA incentives are current as of report date and subject to legislative change. Confirm eligibility with tax counsel prior to closing."
+    }
+
+  ],
+
+  "workbook_style": {
+    "header_font": "Inter",
+    "body_font": "Inter",
+    "header_fill_color": "brand.primary_color",
+    "header_font_color": "#FFFFFF",
+    "header_font_size": 9,
+    "body_font_size": 9,
+    "alternate_row_fill": "#F9FAFB",
+    "tab_colors": {
+      "RSRA Summary":    "brand.primary_color",
+      "Decarb Plan":     "brand.highlight_color",
+      "Emissions Profile": "brand.secondary_color",
+      "Seller Questions": "#6B7280",
+      "Incentives":       "#9CA3AF"
+    },
+    "print_settings": {
+      "fit_to_page": true,
+      "orientation": "landscape",
+      "repeat_header_rows": 1
+    }
+  }
+}
