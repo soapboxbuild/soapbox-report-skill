@@ -1,0 +1,250 @@
+{
+  "$comment": "Retrofit Plan Excel companion spec — controls exact sheet names, column order, formats, and charts for asset managers and sustainability teams running a decarbonization capex plan. Sheets are designed to support financial model integration and board-level reporting.",
+
+  "filename_pattern": "RetrofitPlan_{asset}_{YYYY-MM-DD}.xlsx",
+
+  "sheets": [
+
+    {
+      "id": "plan_summary",
+      "name": "Plan Summary",
+      "order": 1,
+      "type": "key_value",
+      "description": "Cover-page snapshot of the full retrofit program — property info plus plan totals. Designed to paste into a board deck or asset management report.",
+      "rows": [
+        { "label": "Property",                   "data_path": "property.name" },
+        { "label": "Address",                    "data_path": "property.address" },
+        { "label": "Asset Type",                 "data_path": "property.type" },
+        { "label": "GFA (sqft)",                 "data_path": "property.gfa_sqft",              "format": "#,##0" },
+        { "label": "Year Built",                 "data_path": "property.year_built" },
+        { "label": "Prepared By",                "data_path": "prepared_by" },
+        { "label": "Prepared For",               "data_path": "prepared_for" },
+        { "label": "Report Date",                "data_path": "report_date" },
+        { "label": "Hold Period (yrs)",          "data_path": "hold_period_years",              "format": "#,##0", "omit_if_null": true },
+        { "label": "",                           "type": "spacer" },
+        { "label": "Total CapEx",                "data_path": "summary.total_capex",            "format": "$#,##0" },
+        { "label": "Total Annual Savings",       "data_path": "summary.total_annual_savings",   "format": "$#,##0" },
+        { "label": "Simple Payback (yrs)",       "data_path": "summary.simple_payback_years",   "format": "#,##0.0" },
+        { "label": "NPV",                        "data_path": "summary.npv",                    "format": "$#,##0", "omit_if_null": true },
+        { "label": "IRR",                        "data_path": "summary.irr",                    "format": "0.0%",   "omit_if_null": true },
+        { "label": "",                           "type": "spacer" },
+        { "label": "Carbon Reduction (tCO₂e)",  "data_path": "summary.carbon_reduction_tco2e", "format": "#,##0" },
+        { "label": "Stranding Year (Before)",    "data_path": "summary.crrem_stranding_year_before", "omit_if_null": true },
+        { "label": "Stranding Year (After)",     "data_path": "summary.crrem_stranding_year_after",  "omit_if_null": true, "style": "stranding_after" }
+      ],
+      "columns": [
+        { "header": "Field",  "width": 28 },
+        { "header": "Value",  "width": 48, "wrap": true }
+      ],
+      "style": {
+        "label_column": { "bold": true, "fill": "accent" },
+        "value_column": { "fill": "none" },
+        "stranding_after_row": {
+          "bold": true,
+          "fill_by_value": {
+            "null":    "#D1FAE5",
+            "default": "#FEE2E2"
+          },
+          "note": "Green if null (plan keeps asset compliant through hold); red if a stranding year remains."
+        }
+      }
+    },
+
+    {
+      "id": "measures",
+      "name": "Measures",
+      "order": 2,
+      "type": "table",
+      "description": "Full measure list — one row per decarbonization measure. Supports board-level CapEx approval and sustainability team tracking.",
+      "data_path": "measures",
+      "columns": [
+        { "header": "Measure",                 "data_key": "name",                          "width": 36, "wrap": true },
+        { "header": "Tier",                    "data_key": "tier",                          "width": 10 },
+        { "header": "Category",               "data_key": "category",                      "width": 16 },
+        { "header": "Implementation Year",    "data_key": "implementation_year",            "width": 20 },
+        { "header": "CapEx ($)",              "data_key": "capex",                          "width": 16, "format": "$#,##0" },
+        { "header": "Annual Savings ($)",     "data_key": "annual_savings_usd",             "width": 18, "format": "$#,##0" },
+        { "header": "Payback (yrs)",          "data_key": "payback_years",                 "width": 14, "format": "#,##0.0" },
+        { "header": "CO₂ Reduction (tCO₂e)", "data_key": "carbon_reduction_tco2e",         "width": 22, "format": "#,##0.0" },
+        { "header": "$/tCO₂e",               "data_key": "carbon_abatement_cost_per_tco2e","width": 12, "format": "$#,##0", "omit_if_all_null": true },
+        { "header": "Incentive Program",      "data_key": "incentive_program",              "width": 36, "wrap": true, "omit_if_all_null": true },
+        { "header": "Incentive Value ($)",    "data_key": "incentive_value",                "width": 18, "format": "$#,##0", "omit_if_all_null": true }
+      ],
+      "totals_row": {
+        "label_column": "name",
+        "label": "TOTAL",
+        "sum_columns": ["capex", "annual_savings_usd", "carbon_reduction_tco2e"],
+        "format": { "capex": "$#,##0", "annual_savings_usd": "$#,##0", "carbon_reduction_tco2e": "#,##0.0" },
+        "bold": true,
+        "fill": "primary"
+      },
+      "conditional_formatting": {
+        "tier": {
+          "Tier1": { "fill": "#D1FAE5", "font_color": "#065F46" },
+          "Tier2": { "fill": "#FEF3C7", "font_color": "#92400E" },
+          "Tier3": { "fill": "#EDE9FE", "font_color": "#5B21B6" }
+        }
+      },
+      "charts": [
+        {
+          "id": "carbon_by_category",
+          "type": "BarChart",
+          "title": "CO₂ Reduction by Category",
+          "x_axis": "category",
+          "y_axis": "carbon_reduction_tco2e",
+          "aggregate": "sum",
+          "group_by": "category",
+          "y_axis_label": "tCO₂e Reduced",
+          "series_color": "primary",
+          "placement": "right_of_table",
+          "width_cols": 9,
+          "height_rows": 18
+        },
+        {
+          "id": "capex_by_tier",
+          "type": "BarChart",
+          "title": "CapEx by Tier",
+          "x_axis": "tier",
+          "y_axis": "capex",
+          "aggregate": "sum",
+          "group_by": "tier",
+          "y_axis_label": "Total CapEx ($)",
+          "series_color": "highlight",
+          "placement": "below_first_chart",
+          "width_cols": 9,
+          "height_rows": 14
+        }
+      ],
+      "freeze_panes": "B2"
+    },
+
+    {
+      "id": "financial_projection",
+      "name": "Financial Projection",
+      "order": 3,
+      "type": "table",
+      "description": "Year-by-year financial projection — cumulative CapEx deployment vs. savings. Critical for IRR modeling and breakeven visualization.",
+      "data_path": "financial_projection",
+      "columns": [
+        { "header": "Year",                "data_key": "year",              "width": 10 },
+        { "header": "CapEx Spent ($)",     "data_key": "cumulative_capex",  "width": 18, "format": "$#,##0" },
+        { "header": "Annual Savings ($)",  "data_key": "cumulative_savings", "width": 18, "format": "$#,##0" },
+        { "header": "Net Cash Flow ($)",   "data_key": "net_cashflow",      "width": 18, "format": "$#,##0" },
+        { "header": "Cumulative Net ($)",  "data_key": "cumulative_net",    "width": 18, "format": "$#,##0" }
+      ],
+      "conditional_formatting": {
+        "cumulative_net": {
+          "negative": { "fill": "#FEE2E2", "font_color": "#991B1B" },
+          "positive":  { "fill": "#D1FAE5", "font_color": "#065F46" },
+          "zero":      { "fill": "#FFFBEB", "font_color": "#92400E" }
+        }
+      },
+      "charts": [
+        {
+          "id": "cumulative_net_over_time",
+          "type": "LineChart",
+          "title": "Cumulative Net Cash Flow — Breakeven",
+          "x_axis": "year",
+          "series": [
+            { "data_key": "cumulative_net",    "label": "Cumulative Net ($)",    "color": "primary" },
+            { "data_key": "cumulative_capex",  "label": "Cumulative CapEx ($)",  "color": "#EF4444", "line_style": "dashed" },
+            { "data_key": "cumulative_savings","label": "Cumulative Savings ($)", "color": "#10B981", "line_style": "dashed" }
+          ],
+          "y_axis_label": "USD ($)",
+          "x_axis_label": "Year",
+          "reference_line": { "value": 0, "label": "Breakeven", "color": "#6B7280", "line_style": "dotted" },
+          "placement": "right_of_table",
+          "width_cols": 10,
+          "height_rows": 20
+        }
+      ],
+      "freeze_panes": "B2",
+      "note": "Cumulative CapEx and Savings are running totals. Net Cash Flow reflects the in-year delta (savings minus capex deployed). Breakeven occurs where Cumulative Net crosses zero."
+    },
+
+    {
+      "id": "emissions_trajectory",
+      "name": "Emissions Trajectory",
+      "order": 4,
+      "type": "table",
+      "description": "Year-by-year emissions intensity trajectory — baseline vs. retrofit vs. CRREM pathway. The primary stranding visualization for investor and board reporting.",
+      "data_path": "emissions_trajectory",
+      "columns": [
+        { "header": "Year",                        "data_key": "year",                     "width": 10 },
+        { "header": "Baseline (kgCO₂/m²)",         "data_key": "baseline_kgco2_m2",        "width": 22, "format": "#,##0.0" },
+        { "header": "Retrofit (kgCO₂/m²)",         "data_key": "retrofit_kgco2_m2",        "width": 22, "format": "#,##0.0" },
+        { "header": "CRREM Pathway (kgCO₂/m²)",    "data_key": "pathway_target_kgco2_m2",  "width": 26, "format": "#,##0.0" },
+        { "header": "Gap vs Pathway (kgCO₂/m²)",   "data_key": "gap_vs_pathway",           "width": 26, "format": "#,##0.0", "derived": { "formula": "retrofit_kgco2_m2 - pathway_target_kgco2_m2" } },
+        { "header": "Status",                       "data_key": "status",                   "width": 14 }
+      ],
+      "conditional_formatting": {
+        "status": {
+          "aligned":  { "fill": "#D1FAE5", "font_color": "#065F46" },
+          "at-risk":  { "fill": "#FEF3C7", "font_color": "#92400E" },
+          "stranded": { "fill": "#FEE2E2", "font_color": "#991B1B" }
+        }
+      },
+      "charts": [
+        {
+          "id": "stranding_chart",
+          "type": "LineChart",
+          "title": "Emissions Trajectory vs. CRREM Pathway",
+          "x_axis": "year",
+          "series": [
+            { "data_key": "baseline_kgco2_m2",       "label": "Baseline (No Action)",  "color": "#EF4444" },
+            { "data_key": "retrofit_kgco2_m2",        "label": "Retrofit Scenario",     "color": "#3B82F6" },
+            { "data_key": "pathway_target_kgco2_m2",  "label": "CRREM 1.5°C Pathway",  "color": "#10B981", "line_style": "dashed" }
+          ],
+          "y_axis_label": "kgCO₂/m²/yr",
+          "x_axis_label": "Year",
+          "placement": "right_of_table",
+          "width_cols": 11,
+          "height_rows": 22,
+          "note": "Stranding occurs where Retrofit line crosses above CRREM Pathway line."
+        }
+      ],
+      "freeze_panes": "B2"
+    },
+
+    {
+      "id": "incentives",
+      "name": "Incentives",
+      "order": 5,
+      "type": "table",
+      "description": "Incentive programs referenced in this plan — expands into a reference sheet for deal team and tax advisors.",
+      "data_path": "incentives",
+      "omit_if_empty": true,
+      "columns": [
+        { "header": "Program",             "data_key": "program_name",        "width": 40, "wrap": true },
+        { "header": "Amount / Rate",       "data_key": "amount_or_rate",      "width": 28 },
+        { "header": "Applicable Measures", "data_key": "applicable_measures", "width": 48, "wrap": true, "join": ", " },
+        { "header": "Notes",               "data_key": "notes",               "width": 64, "wrap": true }
+      ],
+      "row_height": 50,
+      "footer_note": "IRA incentive values are current as of report date and subject to legislative change. Confirm eligibility, stacking rules, and prevailing wage requirements with tax counsel prior to commitment."
+    }
+
+  ],
+
+  "workbook_style": {
+    "header_font": "Inter",
+    "body_font": "Inter",
+    "header_fill_color": "brand.primary_color",
+    "header_font_color": "#FFFFFF",
+    "header_font_size": 9,
+    "body_font_size": 9,
+    "alternate_row_fill": "#F9FAFB",
+    "tab_colors": {
+      "Plan Summary":          "brand.primary_color",
+      "Measures":              "brand.highlight_color",
+      "Financial Projection":  "brand.secondary_color",
+      "Emissions Trajectory":  "#3B82F6",
+      "Incentives":            "#9CA3AF"
+    },
+    "print_settings": {
+      "fit_to_page": true,
+      "orientation": "landscape",
+      "repeat_header_rows": 1
+    }
+  }
+}

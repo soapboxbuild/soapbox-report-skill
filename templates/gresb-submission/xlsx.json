@@ -1,0 +1,293 @@
+{
+  "$comment": "GRESB Submission Excel companion spec — controls exact sheet names, column order, formats, and charts for sustainability managers and ESG consultants. Designed as a working document for tracking data collection, score gaps, and improvement actions through the annual submission cycle.",
+
+  "filename_pattern": "GRESB_{entity}_{reporting_year}.xlsx",
+
+  "sheets": [
+
+    {
+      "id": "submission_summary",
+      "name": "Submission Summary",
+      "order": 1,
+      "type": "key_value",
+      "description": "Cover-page snapshot — entity details, current scores, and peer comparison. Designed to paste into board reporting or ESG committee slides.",
+      "rows": [
+        { "label": "Entity Name",         "data_path": "entity.name" },
+        { "label": "Reporting Year",       "data_path": "entity.reporting_year" },
+        { "label": "Assessment Type",      "data_path": "entity.assessment_type" },
+        { "label": "Portfolio GFA (sqft)", "data_path": "entity.portfolio_gfa_sqft", "format": "#,##0", "omit_if_null": true },
+        { "label": "Total Assets",         "data_path": "entity.total_assets",        "format": "#,##0", "omit_if_null": true },
+        { "label": "Submission Deadline",  "data_path": "submission_deadline",        "style": "deadline_alert" },
+        { "label": "",                     "type": "spacer" },
+        { "label": "Overall Score",        "data_path": "scores.overall_score",       "format": "#,##0" },
+        { "label": "Peer Average",         "data_path": "scores.peer_average",        "format": "#,##0" },
+        { "label": "Score vs. Peer",       "data_path": "scores.score_delta",         "format": "#,##0", "style": "score_delta" },
+        { "label": "Green Star Rating",    "data_path": "scores.green_star_rating" },
+        { "label": "Prior Year Score",     "data_path": "scores.prior_year_score",    "format": "#,##0", "omit_if_null": true },
+        { "label": "YoY Change",           "data_path": "scores.yoy_change",          "format": "#,##0", "omit_if_null": true, "style": "yoy_change" },
+        { "label": "",                     "type": "spacer" },
+        { "label": "Prepared By",          "data_path": "prepared_by" },
+        { "label": "Prepared For",         "data_path": "prepared_for" },
+        { "label": "Report Date",          "data_path": "report_date" }
+      ],
+      "columns": [
+        { "header": "Field",  "width": 26 },
+        { "header": "Value",  "width": 48, "wrap": true }
+      ],
+      "style": {
+        "label_column": { "bold": true, "fill": "accent" },
+        "value_column": { "fill": "none" },
+        "deadline_alert_row": {
+          "note": "Bold red font if submission_deadline is within 30 days of report_date",
+          "bold_if_days_until": 30,
+          "font_color_if_days_until": "#DC2626"
+        },
+        "score_delta_row": {
+          "fill_by_sign": {
+            "positive": "#D1FAE5",
+            "negative": "#FEE2E2",
+            "zero":     "#F3F4F6"
+          },
+          "font_color_by_sign": {
+            "positive": "#065F46",
+            "negative": "#991B1B"
+          }
+        },
+        "yoy_change_row": {
+          "font_color_by_sign": {
+            "positive": "#065F46",
+            "negative": "#991B1B"
+          }
+        }
+      }
+    },
+
+    {
+      "id": "score_breakdown",
+      "name": "Score Breakdown",
+      "order": 2,
+      "type": "table",
+      "description": "Pillar and sub-component score breakdown — manually constructed from pillars data. Shows points scored vs. maximum with gap analysis to identify where optimization is most impactful.",
+      "construction": "manual",
+      "construction_note": "Renderer constructs rows from pillars.management and pillars.performance sub-component fields. Each sub-component is one row. Insert a pillar subtotal row after each pillar group, then a grand total row at the bottom.",
+      "columns": [
+        { "header": "Pillar",          "data_key": "pillar",          "width": 20 },
+        { "header": "Sub-Component",   "data_key": "sub_component",   "width": 32 },
+        { "header": "Points Scored",   "data_key": "points_scored",   "width": 16, "format": "#,##0" },
+        { "header": "Max Points",      "data_key": "max_points",      "width": 14, "format": "#,##0" },
+        { "header": "% of Max",        "data_key": "pct_of_max",      "width": 14, "format": "0.0%", "computed": "points_scored / max_points" },
+        { "header": "Notes",           "data_key": "notes",           "width": 44, "wrap": true }
+      ],
+      "rows_template": [
+        { "pillar": "Management", "sub_component": "Leadership & Governance", "points_scored": "pillars.management.leadership_pts", "max_points": 9,  "notes": "" },
+        { "pillar": "Management", "sub_component": "Policies & Disclosure",   "points_scored": "pillars.management.policies_pts",   "max_points": 10, "notes": "" },
+        { "pillar": "Management", "sub_component": "Reporting",               "points_scored": "pillars.management.reporting_pts",  "max_points": 9,  "notes": "" },
+        { "pillar": "Management", "sub_component": "Risk Management",         "points_scored": "pillars.management.risk_pts",       "max_points": 7,  "notes": "" },
+        { "type": "pillar_subtotal", "pillar": "Management", "max_points": "pillars.management.max_pts" },
+        { "pillar": "Performance", "sub_component": "Energy",                 "points_scored": "pillars.performance.energy_pts",         "max_points": 20, "notes": "" },
+        { "pillar": "Performance", "sub_component": "GHG Emissions",          "points_scored": "pillars.performance.ghg_pts",            "max_points": 20, "notes": "" },
+        { "pillar": "Performance", "sub_component": "Water",                  "points_scored": "pillars.performance.water_pts",          "max_points": 10, "notes": "" },
+        { "pillar": "Performance", "sub_component": "Waste",                  "points_scored": "pillars.performance.waste_pts",          "max_points": 10, "notes": "" },
+        { "pillar": "Performance", "sub_component": "Certifications",         "points_scored": "pillars.performance.certifications_pts", "max_points": 5,  "notes": "" },
+        { "type": "pillar_subtotal", "pillar": "Performance", "max_points": "pillars.performance.max_pts" },
+        { "type": "grand_total" }
+      ],
+      "subtotal_row_style": { "bold": true, "fill": "#EFF6FF" },
+      "grand_total_row_style": { "bold": true, "fill": "primary", "font_color": "#FFFFFF" },
+      "conditional_formatting": {
+        "pct_of_max": [
+          { "condition": "< 0.5",                        "fill": "#FEE2E2", "font_color": "#991B1B" },
+          { "condition": ">= 0.5 and < 0.75",           "fill": "#FFFBEB", "font_color": "#92400E" },
+          { "condition": ">= 0.75",                     "fill": "#D1FAE5", "font_color": "#065F46" }
+        ]
+      },
+      "charts": [
+        {
+          "id": "pillar_score_comparison",
+          "type": "BarChart",
+          "title": "Points Scored vs. Maximum by Pillar",
+          "x_axis": "pillar",
+          "series": [
+            { "label": "Points Scored", "data_key": "points_scored", "color": "primary" },
+            { "label": "Max Points",    "data_key": "max_points",    "color": "#D1D5DB" }
+          ],
+          "aggregate": "sum",
+          "group": "clustered",
+          "y_axis_label": "Points",
+          "placement": "right_of_table",
+          "width_cols": 9,
+          "height_rows": 18
+        }
+      ],
+      "freeze_panes": "C2"
+    },
+
+    {
+      "id": "data_coverage",
+      "name": "Data Coverage",
+      "order": 3,
+      "type": "key_value",
+      "description": "Data coverage and assurance summary. Coverage rate is the single highest-leverage GRESB optimization — it multiplies the entire Performance pillar score.",
+      "rows": [
+        { "label": "Covered GFA (sqft)",   "data_path": "data_coverage.covered_gfa_sqft", "format": "#,##0" },
+        { "label": "Total GFA (sqft)",     "data_path": "data_coverage.total_gfa_sqft",   "format": "#,##0" },
+        { "label": "Coverage Rate",        "data_path": "data_coverage.coverage_pct",     "format": "0.0%", "style": "coverage_alert" },
+        { "label": "Verified / Assured",   "data_path": "data_coverage.verified_pct",     "format": "0.0%" },
+        { "label": "Assurance Provider",   "data_path": "data_coverage.assurance_provider", "omit_if_null": true },
+        { "label": "",                     "type": "spacer" },
+        {
+          "label": "Coverage Note",
+          "type": "static_text",
+          "value": "Increasing data coverage is the highest-leverage GRESB optimization — coverage rate multiplies the entire Performance score. Prioritize closing coverage gaps before the submission deadline."
+        }
+      ],
+      "columns": [
+        { "header": "Field",  "width": 26 },
+        { "header": "Value",  "width": 48, "wrap": true }
+      ],
+      "style": {
+        "label_column": { "bold": true, "fill": "accent" },
+        "coverage_alert_row": {
+          "fill_by_threshold": {
+            "below_0.5":  { "fill": "#FEE2E2", "font_color": "#991B1B" },
+            "below_0.75": { "fill": "#FFFBEB", "font_color": "#92400E" },
+            "above_0.75": { "fill": "#D1FAE5", "font_color": "#065F46" }
+          }
+        },
+        "static_text_row": { "italic": true, "fill": "#F9FAFB", "font_color": "#4B5563", "row_height": 60, "wrap": true }
+      }
+    },
+
+    {
+      "id": "performance_data",
+      "name": "Performance Data",
+      "order": 4,
+      "type": "table",
+      "description": "Environmental performance indicators — manually constructed from performance_data fields. Formatted for direct inclusion in the GRESB portal data entry form.",
+      "construction": "manual",
+      "construction_note": "Renderer constructs one row per performance indicator from the performance_data object. YoY Change values must be pre-computed or left blank if prior year data is unavailable.",
+      "columns": [
+        { "header": "Indicator",    "data_key": "indicator",   "width": 36 },
+        { "header": "Value",        "data_key": "value",       "width": 20, "format": "#,##0.0" },
+        { "header": "Unit",         "data_key": "unit",        "width": 18 },
+        { "header": "YoY Change",   "data_key": "yoy_change",  "width": 16, "format": "+#,##0.0;-#,##0.0", "omit_if_all_null": true },
+        { "header": "Notes",        "data_key": "notes",       "width": 44, "wrap": true }
+      ],
+      "rows_template": [
+        { "indicator": "Energy Consumption",   "value": "performance_data.energy_consumption_mwh",  "unit": "MWh",       "improving_direction": "decrease" },
+        { "indicator": "Energy Intensity",     "value": "performance_data.energy_intensity_kwh_m2", "unit": "kWh/m²",    "improving_direction": "decrease" },
+        { "indicator": "GHG Scope 1",          "value": "performance_data.ghg_scope1_tco2e",        "unit": "tCO₂e",     "improving_direction": "decrease" },
+        { "indicator": "GHG Scope 2",          "value": "performance_data.ghg_scope2_tco2e",        "unit": "tCO₂e",     "improving_direction": "decrease" },
+        { "indicator": "Water Consumption",    "value": "performance_data.water_m3",                "unit": "m³",        "improving_direction": "decrease" },
+        { "indicator": "Waste Generated",      "value": "performance_data.waste_tonnes",            "unit": "tonnes",    "improving_direction": "decrease" },
+        { "indicator": "Waste Recycling Rate", "value": "performance_data.waste_recycling_pct",     "unit": "%",         "improving_direction": "increase", "format": "#,##0.0" }
+      ],
+      "conditional_formatting": {
+        "yoy_change": {
+          "note": "Green if change is in the improving direction for that indicator; red if worsening. Direction defined per row in rows_template.",
+          "improving": { "font_color": "#065F46" },
+          "worsening": { "font_color": "#991B1B" }
+        }
+      },
+      "freeze_panes": "B2"
+    },
+
+    {
+      "id": "improvement_actions",
+      "name": "Improvement Actions",
+      "order": 5,
+      "type": "table",
+      "description": "Ranked action tracker — teams update Status and Owner here throughout the year. Sorted by estimated points uplift descending so highest-impact actions surface first.",
+      "data_path": "improvement_opportunities",
+      "columns": [
+        { "header": "Pillar",              "data_key": "pillar",                    "width": 16 },
+        { "header": "Action",              "data_key": "action",                    "width": 52, "wrap": true },
+        { "header": "Est. Points Uplift",  "data_key": "estimated_points_uplift",   "width": 18, "format": "#,##0.0" },
+        { "header": "Effort",              "data_key": "effort",                    "width": 12 },
+        { "header": "Timeline (months)",   "data_key": "timeline_months",           "width": 18, "format": "#,##0" },
+        { "header": "Status",              "data_key": "status",                    "width": 18, "default_value": "Not Started" },
+        { "header": "Owner",               "data_key": "owner",                     "width": 24, "default_value": "" }
+      ],
+      "sort": { "column": "estimated_points_uplift", "direction": "descending" },
+      "totals_row": {
+        "label_column": "pillar",
+        "label": "TOTAL",
+        "sum_columns": ["estimated_points_uplift"],
+        "format": "#,##0.0",
+        "bold": true,
+        "fill": "primary"
+      },
+      "conditional_formatting": {
+        "effort": {
+          "low":    { "fill": "#D1FAE5", "font_color": "#065F46" },
+          "medium": { "fill": "#FFFBEB", "font_color": "#92400E" },
+          "high":   { "fill": "#FEE2E2", "font_color": "#991B1B" }
+        }
+      },
+      "charts": [
+        {
+          "id": "uplift_by_pillar",
+          "type": "BarChart",
+          "title": "Estimated Points Uplift by Pillar",
+          "x_axis": "pillar",
+          "y_axis": "estimated_points_uplift",
+          "aggregate": "sum",
+          "y_axis_label": "Est. Points Uplift",
+          "series_color": "primary",
+          "placement": "right_of_table",
+          "width_cols": 8,
+          "height_rows": 16
+        }
+      ],
+      "freeze_panes": "C2",
+      "note": "This sheet is the working tracker. Update Status and Owner columns as actions are completed. Sort is applied on generation — re-sort after edits as needed."
+    },
+
+    {
+      "id": "certifications",
+      "name": "Certifications",
+      "order": 6,
+      "type": "table",
+      "description": "Building certification summary — shows certification coverage by program and estimated GRESB point contribution.",
+      "data_path": "certifications",
+      "columns": [
+        { "header": "Certification",          "data_key": "name",              "width": 22 },
+        { "header": "Certified Assets",       "data_key": "certified_assets",  "width": 18, "format": "#,##0" },
+        { "header": "Total Assets",           "data_key": "total_assets",      "width": 16, "format": "#,##0" },
+        { "header": "Certified GFA (%)",      "data_key": "certified_gfa_pct", "width": 18, "format": "0.0%" },
+        { "header": "Est. GRESB Points",      "data_key": "estimated_gresb_points", "width": 20, "format": "#,##0.0", "omit_if_all_null": true }
+      ],
+      "totals_row": {
+        "label_column": "name",
+        "label": "TOTAL",
+        "sum_columns": ["certified_assets"],
+        "bold": true,
+        "fill": "primary"
+      }
+    }
+
+  ],
+
+  "workbook_style": {
+    "header_font": "Inter",
+    "body_font": "Inter",
+    "header_fill_color": "brand.primary_color",
+    "header_font_color": "#FFFFFF",
+    "header_font_size": 9,
+    "body_font_size": 9,
+    "alternate_row_fill": "#F9FAFB",
+    "tab_colors": {
+      "Submission Summary":  "brand.primary_color",
+      "Score Breakdown":     "brand.highlight_color",
+      "Data Coverage":       "brand.secondary_color",
+      "Performance Data":    "#6B7280",
+      "Improvement Actions": "brand.primary_color",
+      "Certifications":      "#9CA3AF"
+    },
+    "print_settings": {
+      "fit_to_page": true,
+      "orientation": "landscape",
+      "repeat_header_rows": 1
+    }
+  }
+}
