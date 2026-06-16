@@ -1,0 +1,16 @@
+{
+  "name": "Station at Savannah Quarters",
+  "address": "Pooler, GA 31322",
+  "type": "multifamily",
+  "units": 244,
+  "gfa_sqft": null,
+  "year_built": null,
+  "fuel_profile": "all-electric",
+  "utility_structure": "Georgia Power provides electricity; unit-level water submetered; whole-building data available from Georgia Power",
+  "utility_provider": "Georgia Power",
+  "notes": "All-electric confirmed from ESG DD report (March 2023). Georgia Power cooperates with whole-building data sharing — no Conservice manual meter program needed. Propane serves outdoor grill/fireplace amenities only (non-material). Flood risk flagged RED in ESG DD (FEMA). iApts tech package replacement recommended. Georgia is a regulated electricity market — no PPA opportunity.",
+  "flood_risk": "Red flag — review FEMA flood map before PSA",
+  "reports": [],
+  "created": "2026-06-16",
+  "updated": "2026-06-16"
+}

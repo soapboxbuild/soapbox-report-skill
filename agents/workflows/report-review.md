@@ -58,29 +58,35 @@ If the user has already specified a format earlier in the conversation, use that
 
 ### 4. PDF Export
 
-1. Use the Playwright MCP to navigate to the artifact.
-   - If a local artifact URL is available, use it. Otherwise ask the user to open the artifact and share the URL, or export via `print` from the browser.
-2. Wait for Paged.js to finish paginating (wait for `window.PagedPolyfill.done` or a 3-second settle delay).
-3. Call `page.pdf()` with:
-   - `format`: match `brand.page_size` (default: `Letter`)
-   - `printBackground`: `true`
-   - `margin`: `{ top: brand.margin_top, right: brand.margin_side, bottom: brand.margin_bottom, left: brand.margin_side }`
-4. Save to: `workspace/orgs/{org}/portfolios/{portfolio}/assets/{asset}/reports/{template}-{YYYY-MM-DD}.pdf`
-5. Confirm file was written and report the path.
+Save the approved HTML artifact to a temp file, then run:
+
+```bash
+python3 scripts/export_pdf.py \
+  --html /tmp/{template}_{asset}_{date}.html \
+  --output {pdf_path} \
+  --page-size Letter \
+  --margin-top {brand.margin_top} \
+  --margin-side {brand.margin_side} \
+  --margin-bottom {brand.margin_bottom}
+```
+
+The script launches headless Chromium, waits for Paged.js pagination to complete, then exports page-by-page. Output path: `workspace/orgs/{org}/portfolios/{portfolio}/assets/{asset}/reports/{template}-{YYYY-MM-DD}.pdf`
+
+Confirm the file exists after the script exits 0.
 
 ### 5. PPTX Export
 
-Run `python3` with `python-pptx` installed (install via `pip install python-pptx` if absent):
+```bash
+python3 scripts/build_pptx.py \
+  --template {template} \
+  --data /tmp/report_data_{asset}.json \
+  --brand templates/_brand/orgs/{org}/brand.json \
+  --output {pptx_path}
+```
 
-1. Create a new `Presentation()` with slide size matching `brand.page_size`.
-2. For each section in `data.sections` (in order):
-   - Add a slide using a blank layout.
-   - Add a title text box from `section.title`.
-   - For table sections: render an `add_table()` with headers and rows from `section.rows`.
-   - For narrative sections: render a text box from `section.body`.
-   - Apply brand colors to title and table headers (`brand.primary_color`, `brand.highlight_color`).
-3. Save to: `workspace/orgs/{org}/portfolios/{portfolio}/assets/{asset}/reports/{template}-{YYYY-MM-DD}.pptx`
-4. Confirm file was written and report the path.
+Output path: `workspace/orgs/{org}/portfolios/{portfolio}/assets/{asset}/reports/{template}-{YYYY-MM-DD}.pptx`
+
+Confirm the file exists after the script exits 0.
 
 ### 6. XLSX — Already Done
 

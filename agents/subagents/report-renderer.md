@@ -70,7 +70,18 @@ Merge any fields from memory into `data` if the calling skill did not supply the
 
 Before emitting the HTML artifact, generate a companion spreadsheet using `openpyxl`. This runs every render — the XLSX is always produced alongside the report, not just on export request.
 
-Install if needed: `pip install openpyxl`
+Run using the bundled script:
+
+```bash
+python3 scripts/build_xlsx.py \
+  --template {template} \
+  --data /tmp/report_data_{asset}.json \
+  --brand templates/_brand/orgs/{org}/brand.json \
+  --xlsx-spec templates/{template}/xlsx.json \
+  --output {xlsx_path}
+```
+
+Write the merged data object to `/tmp/report_data_{asset}.json` first. Use the org brand path if it exists, falling back to `templates/_brand/soapbox/brand.json`. If no `xlsx.json` exists for the template, the script derives sheets automatically from the data shape.
 
 **Sheet structure** — read `templates/{template}/xlsx.json` if it exists; otherwise derive sheets from the table arrays in `data`:
 
