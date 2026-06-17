@@ -1,0 +1,11 @@
+{
+  "id": "soapbox-report",
+  "name": "Soapbox Report",
+  "description": "Consulting-grade reporting for Soapbox — paginated Paged.js HTML artifacts, PDF/PowerPoint/Excel export, and org-aware brand system. Used by RSRA, CRREM, Retrofit Advisor, GRESB, and other plugins to produce branded reports.",
+  "icon": "📄",
+  "iconUrl": "/icons/soapbox-report.svg",
+  "author": "Soapbox",
+  "category": "productivity",
+  "popular": true,
+  "prompt_addition": ""
+}
