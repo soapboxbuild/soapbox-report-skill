@@ -37,15 +37,21 @@ from typing import Any
 # ---------------------------------------------------------------------------
 
 def _ensure_pptx() -> None:
-    """Install python-pptx if absent."""
+    """Install python-pptx if absent (handles Debian externally-managed envs)."""
     try:
         import pptx  # noqa: F401
     except ImportError:
         print("python-pptx not found — installing...", file=sys.stderr)
-        subprocess.run(
+        # Try normal install first; fall back to --break-system-packages on Debian/Ubuntu
+        result = subprocess.run(
             [sys.executable, "-m", "pip", "install", "python-pptx"],
-            check=True,
+            capture_output=True,
         )
+        if result.returncode != 0:
+            subprocess.run(
+                [sys.executable, "-m", "pip", "install", "python-pptx", "--break-system-packages"],
+                check=True,
+            )
 
 
 _ensure_pptx()
@@ -565,8 +571,11 @@ def _load_json_arg(raw: str) -> dict:
         raw = raw[1:]
     # If it looks like a file path (exists on disk or ends in .json), treat as file
     candidate = Path(raw)
-    if candidate.exists() and candidate.is_file():
-        return json.loads(candidate.read_text())
+    try:
+        if candidate.exists() and candidate.is_file():
+            return json.loads(candidate.read_text())
+    except OSError:
+        pass  # Path too long — fall through to JSON literal parse
     # Otherwise parse as a JSON literal
     return json.loads(raw)
 
