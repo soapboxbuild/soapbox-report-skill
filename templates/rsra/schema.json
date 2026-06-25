@@ -259,6 +259,31 @@
       "type": "boolean",
       "description": "Set to true when this assessment is produced for a disposition/exit rather than acquisition. Reframes the report as a sustainability passport for the broker.",
       "default": false
+    },
+
+    "sources": {
+      "type": "array",
+      "description": "Citations for data used in this report. Each entry represents one external source consulted during research (Brave Search results, utility websites, regulatory sources, etc.). Omit entirely if no external sources were consulted — do not include benchmark table references as sources.",
+      "items": {
+        "type": "object",
+        "required": ["label", "url"],
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "Short human-readable description of what this source provided (e.g., 'ERCOT grid carbon intensity 2025', 'Texas no active BPS — ACEEE 2026')."
+          },
+          "url": {
+            "type": "string",
+            "description": "Full URL of the source page."
+          },
+          "value_cited": {
+            "type": "string",
+            "description": "The specific data point taken from this source (e.g., '0.386 kgCO₂/kWh', '$0.118/kWh commercial rate'). Optional but strongly preferred."
+          }
+        }
+      },
+      "minItems": 1
     }
   }
 }

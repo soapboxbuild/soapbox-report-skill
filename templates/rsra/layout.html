@@ -659,6 +659,60 @@
       text-align: right;
     }
 
+    /* ─────────────────────────────────────────────
+       SOURCES / CITATIONS
+    ───────────────────────────────────────────── */
+    .sources-section {
+      break-before: avoid;
+    }
+
+    .sources-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .source-item {
+      display: flex;
+      gap: 3mm;
+      padding: 2.5mm 0;
+      border-bottom: 1px solid var(--color-border);
+      font-size: 8pt;
+      line-height: 1.4;
+    }
+
+    .source-item:last-child {
+      border-bottom: none;
+    }
+
+    .source-num {
+      flex-shrink: 0;
+      width: 5mm;
+      font-weight: 600;
+      color: var(--color-text-muted);
+    }
+
+    .source-body {
+      flex: 1;
+    }
+
+    .source-label {
+      font-weight: 500;
+      color: var(--color-text);
+    }
+
+    .source-value {
+      color: var(--color-text-muted);
+    }
+
+    .source-url {
+      font-family: var(--font-mono);
+      font-size: 7pt;
+      color: var(--color-secondary);
+      text-decoration: none;
+      word-break: break-all;
+    }
+
     /* CO₂ reduction column */
     .co2-reduction-value {
       font-weight: 600;
@@ -1085,6 +1139,29 @@
       }
     }
 
+    /* ── Sources / Citations ── */
+    var sourcesSection = document.getElementById('sources-section');
+    var sourcesList    = document.getElementById('sources-list');
+    var srcs = data.sources || [];
+    if (sourcesSection && sourcesList && srcs.length > 0) {
+      var srcHtml = '';
+      srcs.forEach(function(s, i) {
+        srcHtml += '<li class="source-item">';
+        srcHtml += '<span class="source-num">' + (i + 1) + '</span>';
+        srcHtml += '<span class="source-body">';
+        srcHtml += '<span class="source-label">' + safe(s.label) + '</span>';
+        if (s.value_cited) {
+          srcHtml += ' <span class="source-value">— ' + safe(s.value_cited) + '</span>';
+        }
+        if (s.url) {
+          srcHtml += '<br><a class="source-url" href="' + safe(s.url) + '">' + safe(s.url) + '</a>';
+        }
+        srcHtml += '</span></li>';
+      });
+      sourcesList.innerHTML = srcHtml;
+      sourcesSection.style.display = '';
+    }
+
     /* ── Confidence note ── */
     if (data.data_quality) {
       var confNote = document.getElementById('confidence-note');
@@ -1311,6 +1388,16 @@
     <ol class="seller-questions-list" id="seller-questions-list">
       <!-- Populated by JS -->
     </ol>
+  </div>
+
+  <!-- ── SECTION 5: SOURCES ── hidden until JS populates -->
+  <div id="sources-section" class="section sources-section" style="display:none">
+    <div class="section-header">
+      <div class="section-accent"></div>
+      <h2 class="section-title">Sources</h2>
+      <span class="section-subtitle">External data consulted in this assessment</span>
+    </div>
+    <ol class="sources-list" id="sources-list"></ol>
   </div>
 
   <!-- ── CONFIDENCE NOTE ── -->
