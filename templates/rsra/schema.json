@@ -110,6 +110,12 @@
           "financial_impact_value": {
             "type": "string",
             "description": "Estimated financial impact as a human-readable string (e.g., '$14,400/yr', '30% × CapEx', '12–15 bps rate relief')."
+          },
+          "emissions_reduction_pct": {
+            "type": "number",
+            "description": "Estimated percentage reduction in whole-building carbon intensity from this single measure (e.g., 8.5 for 8.5%). Use the reference ranges in the SKILL.md.",
+            "minimum": 0,
+            "maximum": 100
           }
         }
       }
@@ -129,6 +135,12 @@
           "type": "number",
           "description": "Sum of all measure CapEx in USD.",
           "minimum": 0
+        },
+        "total_emissions_reduction_pct": {
+          "type": "number",
+          "description": "Estimated total percentage reduction in building carbon intensity if all plan measures are implemented (accounts for overlap between measures — not a simple sum).",
+          "minimum": 0,
+          "maximum": 100
         }
       }
     },
@@ -169,6 +181,16 @@
           "description": "ENERGY STAR score (1–100) if available.",
           "minimum": 1,
           "maximum": 100
+        },
+        "baseline_emissions_kgco2": {
+          "type": "number",
+          "description": "Numeric baseline carbon intensity in kgCO₂e/m²/yr. Used to render the benchmark chart. Derive from baseline_emissions string or estimate from EUI + fuel profile.",
+          "minimum": 0
+        },
+        "benchmark_emissions_kgco2": {
+          "type": "number",
+          "description": "ENERGY STAR sector median carbon intensity in kgCO₂e/m²/yr for this asset type and climate zone. Used as the benchmark bar in the chart.",
+          "minimum": 0
         }
       }
     },

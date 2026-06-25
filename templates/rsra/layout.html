@@ -601,6 +601,71 @@
     }
 
     /* ─────────────────────────────────────────────
+       EMISSIONS BENCHMARK CHART
+    ───────────────────────────────────────────── */
+    .benchmark-chart {
+      padding: 3mm 4mm;
+      background: var(--color-accent);
+      border: 1px solid var(--color-border);
+      border-radius: 3px;
+    }
+
+    .benchmark-row {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      margin-bottom: 2.5mm;
+    }
+
+    .benchmark-row:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .benchmark-label {
+      width: 36mm;
+      flex-shrink: 0;
+      font-size: 8pt;
+      font-weight: 500;
+      color: var(--color-text);
+    }
+
+    .benchmark-bar-track {
+      flex: 1;
+      height: 6px;
+      background: var(--color-border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .benchmark-bar {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0s;
+    }
+
+    .benchmark-figure {
+      width: 16mm;
+      text-align: right;
+      font-size: 8.5pt;
+      font-weight: 600;
+      color: var(--color-text);
+      flex-shrink: 0;
+    }
+
+    .benchmark-unit {
+      margin-top: 1.5mm;
+      font-size: 7.5pt;
+      color: var(--color-text-muted);
+      text-align: right;
+    }
+
+    /* CO₂ reduction column */
+    .co2-reduction-value {
+      font-weight: 600;
+      color: var(--color-secondary);
+    }
+
+    /* ─────────────────────────────────────────────
        CONFIDENCE NOTE
     ───────────────────────────────────────────── */
     .confidence-note {
@@ -884,6 +949,11 @@
         if (m.financial_impact_value)  finImpact += '<div style="font-weight:600;color:var(--color-secondary)">' + safe(m.financial_impact_value) + '</div>';
 
         html += '<tr>';
+        var emRed = (m.emissions_reduction_pct != null)
+          ? '<span class="co2-reduction-value">−' + m.emissions_reduction_pct.toFixed(1) + '%</span>'
+          : '—';
+
+        html += '<tr>';
         html += '<td>' + safe(m.measure) + '</td>';
         html += '<td><span class="timing-badge ' + timingClass(m.timing) + '">' + safe(m.timing) + '</span></td>';
         if (isMF) {
@@ -892,6 +962,7 @@
         html += '<td class="align-right">' + fmtCurrency(m.capex_total) + '</td>';
         html += '<td>' + incentives + '</td>';
         html += '<td>' + (finImpact || '—') + '</td>';
+        html += '<td class="align-right">' + emRed + '</td>';
         html += '</tr>';
       });
       tbody.innerHTML = html;
@@ -909,6 +980,10 @@
           planPerUnit = planTotal / prop.units;
         }
 
+        var totalEmRed = totals.total_emissions_reduction_pct != null
+          ? '<span class="co2-reduction-value">−' + totals.total_emissions_reduction_pct.toFixed(1) + '%</span>'
+          : '—';
+
         var totalCells = '';
         totalCells += '<td>Total Estimated CapEx</td>';
         totalCells += '<td></td>';
@@ -917,6 +992,7 @@
         }
         totalCells += '<td class="align-right">' + fmtCurrency(planTotal) + '</td>';
         totalCells += '<td colspan="2"></td>';
+        totalCells += '<td class="align-right">' + totalEmRed + '</td>';
         totalRow.innerHTML = totalCells;
 
         /* Show/hide the $/unit column header */
@@ -952,6 +1028,35 @@
       regHtml = '—';
     }
     setHtml('profile-regulation', regHtml);
+
+    /* ── Emissions Benchmark Chart ── */
+    var chartContainer = document.getElementById('emissions-benchmark-chart');
+    if (chartContainer && (emiss.baseline_emissions_kgco2 != null || emiss.benchmark_emissions_kgco2 != null)) {
+      var propVal  = emiss.baseline_emissions_kgco2  || 0;
+      var benchVal = emiss.benchmark_emissions_kgco2 || 0;
+      var maxVal   = Math.max(propVal, benchVal, 1) * 1.25;
+      var propPct  = (propVal  / maxVal * 100).toFixed(1);
+      var benchPct = (benchVal / maxVal * 100).toFixed(1);
+      var propColor   = propVal > benchVal ? '#EF4444' : '#10B981';
+      var benchColor  = '#94A3B8';
+      var chartHtml   = '<div class="benchmark-chart">';
+      chartHtml += '<div class="benchmark-row">';
+      chartHtml += '<div class="benchmark-label">This Property</div>';
+      chartHtml += '<div class="benchmark-bar-track"><div class="benchmark-bar" style="width:' + propPct + '%;background:' + propColor + '"></div></div>';
+      chartHtml += '<div class="benchmark-figure">' + propVal.toFixed(1) + '</div>';
+      chartHtml += '</div>';
+      if (benchVal > 0) {
+        chartHtml += '<div class="benchmark-row">';
+        chartHtml += '<div class="benchmark-label">ENERGY STAR Median</div>';
+        chartHtml += '<div class="benchmark-bar-track"><div class="benchmark-bar" style="width:' + benchPct + '%;background:' + benchColor + '"></div></div>';
+        chartHtml += '<div class="benchmark-figure">' + benchVal.toFixed(1) + '</div>';
+        chartHtml += '</div>';
+      }
+      chartHtml += '<div class="benchmark-unit">kgCO₂e/m²/yr</div>';
+      chartHtml += '</div>';
+      chartContainer.innerHTML = chartHtml;
+      chartContainer.style.display = '';
+    }
 
     /* ── Deal Signal ── */
     var signalBox = document.getElementById('signal-box');
@@ -1122,12 +1227,13 @@
     <table>
       <thead>
         <tr>
-          <th style="width:28%">Measure</th>
-          <th style="width:10%">Timing</th>
-          <th id="decarb-unit-col-header" class="align-right" style="width:9%">$/Unit</th>
-          <th class="align-right" style="width:8%">Total</th>
-          <th style="width:24%">Incentive Programs</th>
-          <th style="width:21%">Financial Impact</th>
+          <th style="width:26%">Measure</th>
+          <th style="width:9%">Timing</th>
+          <th id="decarb-unit-col-header" class="align-right" style="width:8%">$/Unit</th>
+          <th class="align-right" style="width:7%">Total</th>
+          <th style="width:22%">Incentive Programs</th>
+          <th style="width:19%">Financial Impact</th>
+          <th class="align-right" style="width:9%">Est. CO₂ Reduction</th>
         </tr>
       </thead>
       <tbody id="decarb-tbody">
@@ -1172,6 +1278,9 @@
         <div class="profile-value" id="profile-regulation">—</div>
       </div>
     </div>
+
+    <!-- Benchmark chart — hidden until JS populates it -->
+    <div id="emissions-benchmark-chart" style="display:none; margin-top:5mm;"></div>
   </div>
 
   <!-- ── SECTION 3: DEAL SIGNAL ── -->
