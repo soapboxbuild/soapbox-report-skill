@@ -838,9 +838,15 @@
 
     function fmtCurrency(n) {
       if (typeof n !== 'number') return '—';
-      if (n >= 1000000) return '$' + (n / 1000000).toFixed(2).replace(/\.?0+$/, '') + 'M';
-      if (n >= 1000)    return '$' + n.toLocaleString('en-US');
-      return '$' + n.toFixed(0);
+      if (n >= 1000000) {
+        var m = n / 1000000;
+        return '$' + (m >= 10 ? Math.round(m) : parseFloat(m.toFixed(1))) + 'M';
+      }
+      if (n >= 1000) {
+        var k = n / 1000;
+        return '$' + (k >= 100 ? Math.round(k) : parseFloat(k.toFixed(1))) + 'K';
+      }
+      return '$' + Math.round(n);
     }
 
     function signalClass(level) {
