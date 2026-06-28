@@ -1023,8 +1023,12 @@
     setHtml('profile-regulation', regHtml);
 
     /* ── Emissions Benchmark Chart ── */
+    /* Only render when EUI is actually measured — if the text says "(est." or "estimated"
+       the agent used benchmarks to produce the value, making peer comparison circular. */
     var chartContainer = document.getElementById('emissions-benchmark-chart');
-    if (chartContainer && (emiss.baseline_emissions_kgco2 != null || emiss.benchmark_emissions_kgco2 != null)) {
+    var baselineText = String(emiss.baseline_emissions || '').toLowerCase();
+    var isEstimated = baselineText.indexOf('(est') !== -1 || baselineText.indexOf('estimated') !== -1 || baselineText.indexOf('benchmark') !== -1;
+    if (chartContainer && !isEstimated && (emiss.baseline_emissions_kgco2 != null || emiss.benchmark_emissions_kgco2 != null)) {
       var propVal  = emiss.baseline_emissions_kgco2  || 0;
       var benchVal = emiss.benchmark_emissions_kgco2 || 0;
       var maxVal   = Math.max(propVal, benchVal, 1) * 1.25;
