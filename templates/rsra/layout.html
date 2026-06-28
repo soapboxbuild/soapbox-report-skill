@@ -886,8 +886,20 @@
 }
 </script>
 
-<!-- Paged.js populates AFTER our populateReport() runs via window.PagedConfig -->
+<!-- populateReport() runs immediately on load AND via Paged.js before hook.
+     Running it immediately ensures the report renders in browser/artifact contexts
+     where the Paged.js CDN may be blocked. Paged.js handles print/PDF pagination
+     when it is available. -->
 <script>
+  // Always populate on DOMContentLoaded — doesn't depend on Paged.js loading.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { populateReport(); });
+  } else {
+    // Already loaded (inline script running after DOM is ready)
+    populateReport();
+  }
+
+  // Also register with Paged.js for print/PDF pagination (when CDN is available).
   window.PagedConfig = {
     auto: true,
     before: function() { return populateReport(); }
