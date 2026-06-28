@@ -1099,7 +1099,7 @@
           srcHtml += ' <span class="source-value">— ' + safe(s.value_cited) + '</span>';
         }
         if (s.url) {
-          srcHtml += '<br><a class="source-url" href="' + safe(s.url) + '">' + safe(s.url) + '</a>';
+          srcHtml += '<br><a class="source-url" target="_blank" rel="noopener noreferrer" href="' + safe(s.url) + '">' + safe(s.url) + '</a>';
         }
         srcHtml += '</span></li>';
       });
