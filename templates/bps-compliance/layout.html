@@ -111,6 +111,43 @@
     }
 
     /* ─────────────────────────────────────────────
+       SCREEN OVERRIDES — artifact viewer / browser
+       Print/Paged.js context keeps the mm layout.
+    ───────────────────────────────────────────── */
+    @media screen {
+      html, body { font-size: 13px; max-width: 900px; margin: 0 auto; }
+
+      /* Cover: no full-height, compact for scrolling */
+      .page-cover { min-height: unset; display: block; margin-bottom: 32px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+      .cover-header { padding: 32px 28px 24px; min-height: unset; }
+      .cover-header .property-name { font-size: 26px; }
+      .cover-header .property-address { font-size: 14px; }
+      .cover-header .report-label { margin-bottom: 12px; }
+      .cover-body { padding: 20px 28px 0; }
+      .cover-meta-grid { grid-template-columns: repeat(3, 1fr); gap: 12px 16px; margin-bottom: 16px; }
+      .cover-meta-item { border-top-width: 2px; padding-top: 8px; }
+      .cover-meta-item .meta-label { font-size: 9px; margin-bottom: 3px; }
+      .cover-meta-item .meta-value { font-size: 13px; }
+      .cover-signal-row { padding: 10px 14px; margin-bottom: 16px; }
+      .cover-footer { padding: 12px 28px 16px; }
+
+      /* Content: comfortable screen padding */
+      .page-content { padding: 0; }
+      .section { margin-bottom: 28px; }
+      .section-header { margin-bottom: 12px; padding-bottom: 8px; }
+      .section-title { font-size: 17px; }
+      thead th { padding: 8px 10px; }
+      tbody td { padding: 7px 10px; }
+      .profile-row .profile-key, .profile-row .profile-value { padding: 7px 10px; }
+      .signal-box { padding: 14px 18px; }
+      .signal-level-label { font-size: 15px; }
+      .signal-narrative-text { font-size: 13px; }
+      .confidence-note { margin-top: 24px; padding: 10px 14px; }
+      .seller-questions-list li { padding: 8px 0; font-size: 12px; }
+      .source-item { padding: 7px 0; }
+    }
+
+    /* ─────────────────────────────────────────────
        COVER PAGE
     ───────────────────────────────────────────── */
     .page-cover {
