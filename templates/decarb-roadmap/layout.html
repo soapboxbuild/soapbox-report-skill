@@ -634,6 +634,14 @@
 </script>
 
 <script>
+  // Always populate on DOMContentLoaded — doesn't depend on Paged.js loading.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { populateReport(); });
+  } else {
+    populateReport();
+  }
+
+  // Also register with Paged.js for print/PDF pagination (when CDN is available).
   window.PagedConfig = {
     auto: true,
     before: function() { return populateReport(); }
