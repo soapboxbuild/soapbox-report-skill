@@ -4,568 +4,429 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rapid Sustainability Risk Assessment</title>
-
-  <!-- Brand fonts — CDN URL from brand.json; fallback to system stack.
-       Google Fonts CSS is dynamically generated per user-agent, so its content
-       varies on every request — SRI cannot be applied without always breaking. -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-
   <style>
-    /* ─────────────────────────────────────────────
-       BRAND VARIABLES
-       Injected at render time; fallbacks ensure
-       the file renders correctly as a standalone.
-    ───────────────────────────────────────────── */
+    /* ─── DESIGN TOKENS ─── */
     :root {
-      --color-primary:    var(--brand-color-primary,   #0F1923);
-      --color-secondary:  var(--brand-color-secondary, #2D6A4F);
-      --color-accent:     var(--brand-color-accent,    #F0F4F8);
-      --color-highlight:  var(--brand-color-highlight, #52B788);
-      --color-text:       var(--brand-color-text,      #0F1923);
-      --color-text-muted: var(--brand-color-muted,     #6B7280);
-      --color-border:     var(--brand-color-border,    #E5E7EB);
-      --font-heading:     var(--brand-font-heading,    'Inter', system-ui, sans-serif);
-      --font-body:        var(--brand-font-body,       'Inter', system-ui, sans-serif);
-      --font-mono:        var(--brand-font-mono,       'JetBrains Mono', monospace);
+      --ink:    #0E1A23;
+      --forest: #1E3A2B;
+      --sage:   #4CAF82;
+      --cloud:  #F5F7F9;
+      --card:   #FFFFFF;
+      --muted:  #6B7A8A;
+      --border: #E2E8EF;
 
-      /* Signal level colors */
-      --signal-low-bg:    #D1FAE5;
-      --signal-low-fg:    #065F46;
-      --signal-low-border:#34D399;
-      --signal-opp-bg:    #ECFDF5;
-      --signal-opp-fg:    #047857;
-      --signal-opp-border:#10B981;
-      --signal-capex-bg:  #FFFBEB;
-      --signal-capex-fg:  #92400E;
+      --signal-low-bg:      #D1FAE5;
+      --signal-low-fg:      #065F46;
+      --signal-low-border:  #34D399;
+      --signal-opp-bg:      #ECFDF5;
+      --signal-opp-fg:      #047857;
+      --signal-opp-border:  #10B981;
+      --signal-capex-bg:    #FFFBEB;
+      --signal-capex-fg:    #92400E;
       --signal-capex-border:#F59E0B;
-      --signal-high-bg:   #FEF2F2;
-      --signal-high-fg:   #991B1B;
-      --signal-high-border:#EF4444;
-
+      --signal-high-bg:     #FEF2F2;
+      --signal-high-fg:     #991B1B;
+      --signal-high-border: #EF4444;
     }
 
-    /* ─────────────────────────────────────────────
-       RESET & BASE
-    ───────────────────────────────────────────── */
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    /* ─── RESET ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
-      font-family: var(--font-body);
+      background: #F5F7F9;
+      margin: 0;
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
       font-size: 14px;
-      max-width: 880px;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    /* ─── REPORT WRAPPER ─── */
+    .report {
+      max-width: 760px;
       margin: 0 auto;
-      padding: 0 0 48px;
-      color: var(--color-text);
-      background: #fff;
+      padding: 32px 0 64px;
     }
 
-    /* ─────────────────────────────────────────────
-       COVER PAGE
-    ───────────────────────────────────────────── */
-    .page-cover {
-      display: block;
-      width: 100%;
-      margin-bottom: 32px;
-      border-radius: 8px;
+    /* ─────────────────────────────────
+       1. SIGNAL HERO
+    ───────────────────────────────── */
+    .signal-hero {
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+      margin-bottom: 24px;
+      box-shadow: 0 2px 12px rgba(14,26,35,0.08);
     }
 
-    .cover-header {
-      background: var(--color-primary);
-      color: #fff;
-      padding: 48px 40px 36px;
+    /* Top strip: dark bg with property name + address */
+    .hero-top {
+      background: var(--ink);
+      padding: 16px 24px;
       display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
     }
 
-    .cover-header .report-label {
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--color-highlight);
-      margin-bottom: 16px;
-    }
-
-    .cover-header .property-name {
-      font-size: 36px;
-      font-weight: 700;
-      line-height: 1.1;
-      letter-spacing: -0.02em;
-      margin-bottom: 10px;
-    }
-
-    .cover-header .property-address {
-      font-size: 18px;
-      font-weight: 300;
-      color: rgba(255, 255, 255, 0.72);
-    }
-
-    .cover-body {
-      padding: 24px 40px 0;
-      background: #fff;
-    }
-
-    .cover-meta-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px 16px;
-      margin-bottom: 20px;
-    }
-
-    .cover-meta-item {
-      border-top: 2px solid var(--color-highlight);
-      padding-top: 8px;
-    }
-
-    .cover-meta-item .meta-label {
-      font-size: 11px;
+    .hero-property-name {
+      font-size: 13px;
       font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
-      margin-bottom: 6px;
+      color: var(--muted);
+      /* overridden by JS via cover-property-name span inside */
     }
 
-    .cover-meta-item .meta-value {
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--color-text);
-    }
-
-    /* Inline deal signal on cover */
-    .cover-signal-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 14px;
-      border-radius: 3px;
-      margin-bottom: 20px;
-      border-left-width: 3px;
-      border-left-style: solid;
-    }
-
-    .cover-signal-row .signal-badge {
+    .hero-address {
       font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
+      color: rgba(255,255,255,0.55);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-shrink: 1;
+    }
+
+    .hero-date {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
       white-space: nowrap;
       flex-shrink: 0;
     }
 
-    .cover-signal-row .signal-narrative {
-      font-size: 13px;
-      line-height: 1.4;
+    /* Main signal area — colored by signal class via JS */
+    #cover-signal-row {
+      padding: 28px 24px 20px;
+      display: block;
     }
 
-    .cover-footer {
-      padding: 16px 40px 20px;
+    #cover-signal-row .signal-badge {
+      display: block;
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+    }
+
+    #cover-signal-row .signal-narrative {
+      display: block;
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 680px;
+      opacity: 0.9;
+    }
+
+    /* Signal color classes applied by JS */
+    #cover-signal-row.signal-low {
+      background: var(--signal-low-bg);
+      color: var(--signal-low-fg);
+    }
+    #cover-signal-row.signal-opportunity {
+      background: var(--signal-opp-bg);
+      color: var(--signal-opp-fg);
+    }
+    #cover-signal-row.signal-capex {
+      background: var(--signal-capex-bg);
+      color: var(--signal-capex-fg);
+    }
+    #cover-signal-row.signal-high {
+      background: var(--signal-high-bg);
+      color: var(--signal-high-fg);
+    }
+
+    /* Bottom metrics strip */
+    .hero-metrics {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-top: 1px solid var(--color-border);
-      background: #fff;
+      gap: 0;
     }
 
-    .cover-footer .org-logo {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .hero-metric {
+      flex: 1;
+      padding: 10px 16px;
+      border-right: 1px solid rgba(0,0,0,0.08);
     }
+    .hero-metric:last-child { border-right: none; }
 
-    .cover-footer .org-logo .logo-mark {
-      width: 22px;
-      height: 22px;
-      background: var(--color-primary);
-      border-radius: 3px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .cover-footer .org-logo .logo-mark svg {
-      width: 14px;
-      height: 14px;
-      fill: #fff;
-    }
-
-    .cover-footer .org-name {
-      font-size: 12px;
+    .hero-metric-label {
+      font-size: 10px;
       font-weight: 600;
-      color: var(--color-text);
-    }
-
-    .cover-footer .cover-footer-right {
-      text-align: right;
-    }
-
-    .cover-footer .confidential-label {
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--color-text-muted);
-      letter-spacing: 0.06em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
+      opacity: 0.6;
+      margin-bottom: 2px;
     }
 
-    .cover-footer .report-date {
+    .hero-metric-value {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* Tint metrics strip based on signal */
+    .signal-hero.signal-low    .hero-metrics { background: #B6F2D3; color: var(--signal-low-fg); }
+    .signal-hero.signal-opportunity .hero-metrics { background: #D1FAE5; color: var(--signal-opp-fg); }
+    .signal-hero.signal-capex  .hero-metrics { background: #FDE68A; color: var(--signal-capex-fg); }
+    .signal-hero.signal-high   .hero-metrics { background: #FECACA; color: var(--signal-high-fg); }
+
+    /* Disposition banner */
+    .disposition-banner {
+      background: var(--forest);
+      color: #fff;
+      text-align: center;
       font-size: 11px;
-      color: var(--color-text-muted);
-      margin-top: 2px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 7px 16px;
+      margin-bottom: 16px;
+      border-radius: 6px;
     }
 
-    /* ─────────────────────────────────────────────
-       CONTENT PAGES
-    ───────────────────────────────────────────── */
-    .page-content {
-      padding: 0;
-    }
-
-    /* ─────────────────────────────────────────────
-       SECTION STRUCTURE
-    ───────────────────────────────────────────── */
+    /* ─────────────────────────────────
+       SECTION CHROME
+    ───────────────────────────────── */
     .section {
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .section-header {
       display: flex;
       align-items: center;
-      gap: 11px;
-      margin-bottom: 15px;
-      padding-bottom: 8px;
-      border-bottom: 1.5px solid var(--color-border);
+      gap: 8px;
+      margin-bottom: 12px;
     }
 
     .section-accent {
       width: 3px;
-      height: 18px;
-      background: var(--color-secondary);
+      height: 16px;
+      background: var(--forest);
       border-radius: 2px;
       flex-shrink: 0;
     }
 
     .section-title {
-      font-family: var(--font-heading);
-      font-size: 19px;
+      font-size: 15px;
       font-weight: 700;
-      color: var(--color-primary);
+      color: var(--forest);
       letter-spacing: -0.01em;
     }
 
     .section-subtitle {
       font-size: 12px;
-      color: var(--color-text-muted);
+      color: var(--muted);
       margin-left: auto;
     }
 
-    /* ─────────────────────────────────────────────
-       TABLES
-    ───────────────────────────────────────────── */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
+    /* ─────────────────────────────────
+       2. CAPEX CARDS
+    ───────────────────────────────── */
+    .capex-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
-    thead th {
-      background: var(--color-primary);
-      color: #fff;
+    .capex-card {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 14px 18px;
+      border-left: 3px solid var(--sage);
+      box-shadow: 0 1px 4px rgba(14,26,35,0.05);
+    }
+
+    .capex-card-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .capex-measure {
+      font-size: 13px;
       font-weight: 600;
-      font-size: 11px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      padding: 8px 12px;
-      text-align: left;
+      color: var(--ink);
+      flex: 1;
     }
 
-    thead th:first-child {
-      border-radius: 2px 0 0 0;
-    }
-
-    thead th:last-child {
-      border-radius: 0 2px 0 0;
-    }
-
-    tbody tr:nth-child(odd) {
-      background: var(--color-accent);
-    }
-
-    tbody tr:nth-child(even) {
-      background: #fff;
-    }
-
-    tbody td {
-      padding: 8px 12px;
-      vertical-align: top;
-      line-height: 1.4;
-      border-bottom: 1px solid var(--color-border);
-    }
-
-    tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    /* Total row */
-    tbody tr.row-total td {
-      background: var(--color-primary);
-      color: #fff;
-      font-weight: 700;
-      font-size: 12px;
-      border-top: none;
-      border-bottom: none;
-    }
-
-    /* Column alignment helpers */
-    td.align-right, th.align-right { text-align: right; }
-    td.align-center, th.align-center { text-align: center; }
-    td.text-muted { color: var(--color-text-muted); font-size: 12px; }
-
-    /* Timing badge */
     .timing-badge {
       display: inline-block;
       font-size: 11px;
       font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 2px;
+      padding: 2px 8px;
+      border-radius: 3px;
       white-space: nowrap;
+      flex-shrink: 0;
     }
 
-    .timing-early {
-      background: #DBEAFE;
-      color: #1E40AF;
+    .timing-early  { background: #DBEAFE; color: #1E40AF; }
+    .timing-mid    { background: #FEF3C7; color: #92400E; }
+    .timing-late   { background: #FCE7F3; color: #9D174D; }
+    .timing-ongoing{ background: #F3F4F6; color: #374151; }
+
+    .capex-incentives {
+      margin-bottom: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
     }
 
-    .timing-mid {
-      background: #FEF3C7;
-      color: #92400E;
-    }
-
-    .timing-late {
-      background: #FCE7F3;
-      color: #9D174D;
-    }
-
-    .timing-ongoing {
-      background: #F3F4F6;
-      color: #374151;
-    }
-
-    /* Incentive pill */
     .incentive-pill {
       display: inline-block;
       font-size: 11px;
       font-weight: 500;
       padding: 2px 8px;
       border-radius: 10px;
-      border: 1px solid var(--color-highlight);
-      color: var(--color-secondary);
+      border: 1px solid var(--sage);
+      color: var(--forest);
       white-space: nowrap;
-      margin-bottom: 4px;
     }
 
-    /* ─────────────────────────────────────────────
-       EMISSIONS PROFILE — two-column key/value
-    ───────────────────────────────────────────── */
-    .profile-grid {
+    .capex-amounts {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 12px;
+    }
+
+    .capex-total {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-left: auto;
+    }
+
+    .capex-per-unit {
+      color: var(--muted);
+    }
+
+    .capex-co2 {
+      font-weight: 600;
+      color: var(--sage);
+    }
+
+    .capex-fin-impact {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* Total row card */
+    .capex-total-card {
+      background: var(--ink);
+      border-radius: 8px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+      margin-top: 4px;
+    }
+
+    .capex-total-card .label {
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0.7;
+    }
+
+    .capex-total-card .amounts {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .capex-total-card .total-amount {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .capex-total-card .per-unit {
+      font-size: 13px;
+      opacity: 0.7;
+    }
+
+    .capex-total-card .co2-total {
+      font-size: 13px;
+      color: var(--sage);
+      font-weight: 600;
+    }
+
+    /* Hidden table elements kept for JS compatibility */
+    #decarb-tbody, #decarb-total-row, #decarb-unit-col-header { display: none; }
+
+    /* ─────────────────────────────────
+       3. EMISSIONS PROFILE
+    ───────────────────────────────── */
+    .emissions-card {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 4px rgba(14,26,35,0.05);
+    }
+
+    .profile-dl {
       display: grid;
-      grid-template-columns: 140px 1fr;
+      grid-template-columns: 120px 1fr;
       row-gap: 0;
     }
 
-    .profile-row {
-      display: contents;
-    }
-
-    .profile-row .profile-key,
-    .profile-row .profile-value {
-      padding: 7px 12px;
-      border-bottom: 1px solid var(--color-border);
-      vertical-align: top;
-      font-size: 12px;
-      line-height: 1.45;
-    }
-
-    .profile-row:last-child .profile-key,
-    .profile-row:last-child .profile-value {
-      border-bottom: none;
-    }
-
-    .profile-row:nth-child(odd) .profile-key,
-    .profile-row:nth-child(odd) .profile-value {
-      background: var(--color-accent);
-    }
-
-    .profile-key {
-      font-weight: 600;
-      font-size: 12px;
-      color: var(--color-primary);
-      white-space: nowrap;
-    }
-
-    .profile-value .profile-description {
-      font-size: 11px;
-      color: var(--color-text-muted);
-      margin-top: 3px;
-    }
-
-    /* Regulation risk indicator */
-    .reg-high { color: #B91C1C; font-weight: 600; }
-    .reg-moderate { color: #B45309; font-weight: 600; }
-    .reg-low { color: #065F46; font-weight: 600; }
-
-    /* ─────────────────────────────────────────────
-       DEAL SIGNAL BOX
-    ───────────────────────────────────────────── */
-    .signal-box {
-      border-radius: 4px;
-      padding: 16px 20px;
-      border-left-width: 4px;
-      border-left-style: solid;
-      break-inside: avoid;
-    }
-
-    .signal-box.signal-low {
-      background: var(--signal-low-bg);
-      border-left-color: var(--signal-low-border);
-    }
-
-    .signal-box.signal-opportunity {
-      background: var(--signal-opp-bg);
-      border-left-color: var(--signal-opp-border);
-    }
-
-    .signal-box.signal-capex {
-      background: var(--signal-capex-bg);
-      border-left-color: var(--signal-capex-border);
-    }
-
-    .signal-box.signal-high {
-      background: var(--signal-high-bg);
-      border-left-color: var(--signal-high-border);
-    }
-
-    .signal-box-header {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      margin-bottom: 11px;
-    }
-
-    .signal-icon {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      font-size: 15px;
-      font-weight: 700;
-    }
-
-    .signal-low .signal-icon    { background: var(--signal-low-border);    color: #fff; }
-    .signal-opportunity .signal-icon { background: var(--signal-opp-border); color: #fff; }
-    .signal-capex .signal-icon  { background: var(--signal-capex-border);  color: #fff; }
-    .signal-high .signal-icon   { background: var(--signal-high-border);   color: #fff; }
-
-    .signal-level-label {
-      font-size: 17px;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-    }
-
-    .signal-low .signal-level-label    { color: var(--signal-low-fg);   }
-    .signal-opportunity .signal-level-label { color: var(--signal-opp-fg); }
-    .signal-capex .signal-level-label  { color: var(--signal-capex-fg); }
-    .signal-high .signal-level-label   { color: var(--signal-high-fg);  }
-
-    .signal-narrative-text {
-      font-size: 14px;
-      line-height: 1.55;
-    }
-
-    .signal-low .signal-narrative-text    { color: var(--signal-low-fg);   }
-    .signal-opportunity .signal-narrative-text { color: var(--signal-opp-fg); }
-    .signal-capex .signal-narrative-text  { color: var(--signal-capex-fg); }
-    .signal-high .signal-narrative-text   { color: var(--signal-high-fg);  }
-
-    /* ─────────────────────────────────────────────
-       SELLER QUESTIONS
-    ───────────────────────────────────────────── */
-    .seller-questions-list {
-      list-style: none;
-      padding: 0;
-    }
-
-    .seller-questions-list li {
-      display: flex;
-      gap: 13px;
-      padding: 11px 0;
-      border-bottom: 1px solid var(--color-border);
+    .profile-dt, .profile-dd {
+      padding: 8px 10px;
       font-size: 13px;
+      border-bottom: 1px solid var(--border);
       line-height: 1.5;
     }
 
-    .seller-questions-list li:last-child {
+    .profile-dt {
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--forest);
+      background: #F8FAF9;
+    }
+
+    .profile-dd {
+      color: var(--ink);
+      background: var(--card);
+    }
+
+    .profile-dt:last-of-type,
+    .profile-dd:last-of-type {
       border-bottom: none;
     }
 
-    .seller-q-num {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: var(--color-secondary);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
+    /* Regulation risk */
+    .reg-high     { color: #B91C1C; font-weight: 600; }
+    .reg-moderate { color: #B45309; font-weight: 600; }
+    .reg-low      { color: #065F46; font-weight: 600; }
 
-    /* ─────────────────────────────────────────────
-       EMISSIONS BENCHMARK CHART
-    ───────────────────────────────────────────── */
+    /* Benchmark chart */
     .benchmark-chart {
-      padding: 11px 15px;
-      background: var(--color-accent);
-      border: 1px solid var(--color-border);
-      border-radius: 3px;
+      margin-top: 16px;
+      padding: 14px 16px;
+      background: var(--cloud);
+      border: 1px solid var(--border);
+      border-radius: 6px;
     }
 
     .benchmark-row {
       display: flex;
       align-items: center;
-      gap: 11px;
-      margin-bottom: 9px;
+      gap: 10px;
+      margin-bottom: 8px;
     }
-
-    .benchmark-row:last-of-type {
-      margin-bottom: 0;
-    }
+    .benchmark-row:last-of-type { margin-bottom: 0; }
 
     .benchmark-label {
-      width: 136px;
+      width: 130px;
       flex-shrink: 0;
       font-size: 11px;
       font-weight: 500;
-      color: var(--color-text);
+      color: var(--ink);
     }
 
     .benchmark-bar-track {
       flex: 1;
       height: 6px;
-      background: var(--color-border);
+      background: var(--border);
       border-radius: 3px;
       overflow: hidden;
     }
@@ -573,30 +434,105 @@
     .benchmark-bar {
       height: 100%;
       border-radius: 3px;
-      transition: width 0s;
     }
 
     .benchmark-figure {
-      width: 60px;
+      width: 56px;
       text-align: right;
       font-size: 12px;
       font-weight: 600;
-      color: var(--color-text);
+      color: var(--ink);
       flex-shrink: 0;
     }
 
     .benchmark-unit {
       margin-top: 6px;
       font-size: 11px;
-      color: var(--color-text-muted);
+      color: var(--muted);
       text-align: right;
     }
 
-    /* ─────────────────────────────────────────────
-       SOURCES / CITATIONS
-    ───────────────────────────────────────────── */
-    .sources-section {
-      break-before: avoid;
+    /* ─────────────────────────────────
+       signal-box: hidden (signal is in hero)
+    ───────────────────────────────── */
+    #signal-box { display: none; }
+
+    /* ─────────────────────────────────
+       4. SELLER QUESTIONS
+    ───────────────────────────────── */
+    .questions-list {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .question-card {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 14px 16px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      box-shadow: 0 1px 4px rgba(14,26,35,0.05);
+    }
+
+    .seller-q-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--sage);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .question-text {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--ink);
+      padding-top: 3px;
+    }
+
+    /* ─────────────────────────────────
+       5. SOURCES (collapsible)
+    ───────────────────────────────── */
+    #sources-section details {
+      background: var(--card);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    #sources-section summary {
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--forest);
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #sources-section summary::before {
+      content: '▶';
+      font-size: 10px;
+      transition: transform 0.15s;
+    }
+
+    #sources-section details[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+    #sources-section .sources-inner {
+      padding: 0 16px 12px;
     }
 
     .sources-list {
@@ -607,110 +543,57 @@
 
     .source-item {
       display: flex;
-      gap: 11px;
-      padding: 9px 0;
-      border-bottom: 1px solid var(--color-border);
-      font-size: 11px;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
       line-height: 1.4;
     }
-
-    .source-item:last-child {
-      border-bottom: none;
-    }
+    .source-item:last-child { border-bottom: none; }
 
     .source-num {
       flex-shrink: 0;
-      width: 19px;
+      width: 18px;
       font-weight: 600;
-      color: var(--color-text-muted);
+      color: var(--muted);
     }
 
-    .source-body {
-      flex: 1;
-    }
+    .source-body { flex: 1; }
 
-    .source-label {
-      font-weight: 500;
-      color: var(--color-text);
-    }
-
-    .source-value {
-      color: var(--color-text-muted);
-    }
-
+    .source-label { font-weight: 500; color: var(--ink); }
+    .source-value { color: var(--muted); }
     .source-url {
-      font-family: var(--font-mono);
-      font-size: 7pt;
-      color: var(--color-secondary);
+      font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--forest);
       text-decoration: none;
       word-break: break-all;
     }
 
-    /* CO₂ reduction column */
-    .co2-reduction-value {
-      font-weight: 600;
-      color: var(--color-secondary);
-    }
-
-    /* ─────────────────────────────────────────────
-       CONFIDENCE NOTE
-    ───────────────────────────────────────────── */
+    /* ─────────────────────────────────
+       6. CONFIDENCE NOTE
+    ───────────────────────────────── */
     .confidence-note {
-      margin-top: 24px;
-      padding: 10px 14px;
-      background: var(--color-accent);
-      border: 1px solid var(--color-border);
-      border-radius: 3px;
+      margin-top: 8px;
       font-size: 12px;
-      color: var(--color-text-muted);
-      line-height: 1.45;
+      color: var(--muted);
+      line-height: 1.5;
     }
 
     .confidence-note strong {
-      color: var(--color-text);
+      color: var(--ink);
       font-weight: 600;
     }
 
-    /* ─────────────────────────────────────────────
-       SECTION PAGE BREAKS
-    ───────────────────────────────────────────── */
-    .break-before {
-      break-before: page;
-    }
-
-    /* ─────────────────────────────────────────────
-       DISPOSITION MODE BANNER
-    ───────────────────────────────────────────── */
-    .disposition-banner {
-      background: var(--color-secondary);
-      color: #fff;
-      text-align: center;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 8px 15px;
-      margin-bottom: 19px;
-    }
-
-    /* ─────────────────────────────────────────────
-       UTILITY
-    ───────────────────────────────────────────── */
+    /* ─── UTILITY ─── */
     .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip: rect(0,0,0,0);
+      position: absolute; width: 1px; height: 1px;
+      overflow: hidden; clip: rect(0,0,0,0);
     }
   </style>
 </head>
 <body>
 
-<!-- ──────────────────────────────────────────────────────────────────
-     REPORT DATA — replace this script block with actual report data
-     at render time, or populate via the Soapbox report skill output.
-────────────────────────────────────────────────────────────────────── -->
 <script id="report-data" type="application/json">
 {
   "property": {
@@ -811,16 +694,10 @@
 }
 </script>
 
-<!-- populateReport() runs immediately on load AND via Paged.js before hook.
-     Running it immediately ensures the report renders in browser/artifact contexts
-     where the Paged.js CDN may be blocked. Paged.js handles print/PDF pagination
-     when it is available. -->
 <script>
-  // Always populate on DOMContentLoaded — doesn't depend on Paged.js loading.
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() { populateReport(); });
   } else {
-    // Already loaded (inline script running after DOM is ready)
     populateReport();
   }
 
@@ -889,104 +766,119 @@
       return 'reg-low';
     }
 
-    /* ── Named string anchors for Paged.js ── */
+    /* ── Named string anchors ── */
     setText('org-name-anchor', safe(data.prepared_for || data.prepared_by || 'Confidential'));
 
-    /* ── Cover ── */
+    /* ── Hero: property name + address ── */
     setText('cover-property-name', safe(prop.name));
     setText('cover-property-address', safe(prop.address));
+    setText('cover-meta-date', safe(data.report_date));
 
-    setText('cover-meta-type',   safe(capitalise(prop.type)));
-    setText('cover-meta-units',  prop.units  ? prop.units + ' units'   : (prop.gfa_sqft ? fmtSqft(prop.gfa_sqft) : '—'));
-    setText('cover-meta-built',  prop.year_built ? String(prop.year_built) : '—');
-    setText('cover-meta-for',    safe(data.prepared_for));
-    setText('cover-meta-by',     safe(data.prepared_by));
-    setText('cover-meta-date',   safe(data.report_date));
+    /* ── Hero: key metrics strip ── */
+    setText('cover-meta-type',  safe(capitalise(prop.type)));
+    setText('cover-meta-units', prop.units ? prop.units + ' units' : (prop.gfa_sqft ? fmtSqft(prop.gfa_sqft) : '—'));
+    setText('cover-meta-built', prop.year_built ? String(prop.year_built) : '—');
+    setText('cover-meta-for',   safe(data.prepared_for));
+    setText('cover-meta-by',    safe(data.prepared_by));
 
-    /* Cover signal row */
-    var coverSignalRow = document.getElementById('cover-signal-row');
-    if (coverSignalRow && signal.level) {
-      coverSignalRow.className = 'cover-signal-row ' + signalClass(signal.level);
-      coverSignalRow.querySelector('.signal-badge').textContent = signal.level;
-      coverSignalRow.querySelector('.signal-narrative').textContent = safe(signal.narrative);
+    /* CapEx per unit for hero strip */
+    var isMF = prop.type === 'multifamily' || prop.type === 'senior-living' || prop.type === 'student-housing';
+    if (isMF && totals.capex_per_unit) {
+      setText('cover-meta-capex-unit', fmtCurrency(totals.capex_per_unit) + '/unit');
     }
 
-    /* Disposition banner */
+    /* ── Cover signal row (hero main area) ── */
+    var coverSignalRow = document.getElementById('cover-signal-row');
+    if (coverSignalRow && signal.level) {
+      var sc = signalClass(signal.level);
+      coverSignalRow.className = 'cover-signal-row ' + sc;
+      coverSignalRow.querySelector('.signal-badge').textContent = signal.level;
+      coverSignalRow.querySelector('.signal-narrative').textContent = safe(signal.narrative);
+      /* Apply signal class to the hero wrapper too (for metrics strip tint) */
+      var hero = document.getElementById('signal-hero-wrapper');
+      if (hero) hero.className = 'signal-hero ' + sc;
+    }
+
+    /* ── Disposition banner ── */
     if (isDisp) {
       var banner = document.getElementById('disposition-banner');
       if (banner) banner.style.display = '';
     }
 
-    /* ── Decarb Plan table ── */
-    var tbody = document.getElementById('decarb-tbody');
-    if (tbody) {
-      var isMF = prop.type === 'multifamily' || prop.type === 'senior-living' || prop.type === 'student-housing';
+    /* ── CapEx Cards ── */
+    var capexList = document.getElementById('capex-cards-list');
+    if (capexList) {
+      var planTotal = totals.capex_total;
+      if (!planTotal) {
+        planTotal = plan.reduce(function(s, m) { return s + (m.capex_total || 0); }, 0);
+      }
+      var planPerUnit = totals.capex_per_unit;
+      if (!planPerUnit && isMF && prop.units) {
+        planPerUnit = planTotal / prop.units;
+      }
+
       var html = '';
       plan.forEach(function(m) {
         var incentives = m.incentive_program
           ? m.incentive_program.split(';').map(function(p) {
               return '<span class="incentive-pill">' + p.trim() + '</span>';
-            }).join(' ')
-          : '—';
-        var finImpact = '';
-        if (m.financial_impact_type)   finImpact += '<div>' + safe(m.financial_impact_type) + '</div>';
-        if (m.financial_impact_timing) finImpact += '<div class="text-muted" style="font-size:8pt;color:var(--color-text-muted)">' + safe(m.financial_impact_timing) + '</div>';
-        if (m.financial_impact_value)  finImpact += '<div style="font-weight:600;color:var(--color-secondary)">' + safe(m.financial_impact_value) + '</div>';
+            }).join('')
+          : '';
 
-        html += '<tr>';
+        var finImpactParts = [];
+        if (m.financial_impact_value) finImpactParts.push(safe(m.financial_impact_value));
+        if (m.financial_impact_type)  finImpactParts.push(safe(m.financial_impact_type));
+        var finStr = finImpactParts.join(' · ');
+
         var emRed = (m.emissions_reduction_pct != null)
-          ? '<span class="co2-reduction-value">−' + m.emissions_reduction_pct.toFixed(1) + '%</span>'
-          : '—';
+          ? '<span class="capex-co2">−' + m.emissions_reduction_pct.toFixed(1) + '% CO₂</span>'
+          : '';
 
-        html += '<tr>';
-        html += '<td>' + safe(m.measure) + '</td>';
-        html += '<td><span class="timing-badge ' + timingClass(m.timing) + '">' + safe(m.timing) + '</span></td>';
-        if (isMF) {
-          html += '<td class="align-right">' + (m.capex_per_unit != null ? fmtCurrency(m.capex_per_unit) : '—') + '</td>';
+        html += '<div class="capex-card">';
+        html +=   '<div class="capex-card-top">';
+        html +=     '<span class="capex-measure">' + safe(m.measure) + '</span>';
+        html +=     '<span class="timing-badge ' + timingClass(m.timing) + '">' + safe(m.timing) + '</span>';
+        html +=   '</div>';
+        if (incentives) {
+          html += '<div class="capex-incentives">' + incentives + '</div>';
         }
-        html += '<td class="align-right">' + fmtCurrency(m.capex_total) + '</td>';
-        html += '<td>' + incentives + '</td>';
-        html += '<td>' + (finImpact || '—') + '</td>';
-        html += '<td class="align-right">' + emRed + '</td>';
-        html += '</tr>';
+        html +=   '<div class="capex-amounts">';
+        if (finStr) {
+          html += '<span class="capex-fin-impact">' + finStr + '</span>';
+        }
+        if (emRed) { html += emRed; }
+        if (isMF && m.capex_per_unit != null) {
+          html += '<span class="capex-per-unit">' + fmtCurrency(m.capex_per_unit) + '/unit</span>';
+        }
+        html +=   '<span class="capex-total">' + fmtCurrency(m.capex_total) + '</span>';
+        html +=   '</div>';
+        html += '</div>';
       });
-      tbody.innerHTML = html;
+      capexList.innerHTML = html;
 
-      /* Totals row */
-      var totalRow = document.getElementById('decarb-total-row');
-      if (totalRow) {
-        /* Compute totals if not provided */
-        var planTotal = totals.capex_total;
-        if (!planTotal) {
-          planTotal = plan.reduce(function(s, m) { return s + (m.capex_total || 0); }, 0);
-        }
-        var planPerUnit = totals.capex_per_unit;
-        if (!planPerUnit && isMF && prop.units) {
-          planPerUnit = planTotal / prop.units;
-        }
-
-        var totalEmRed = totals.total_emissions_reduction_pct != null
-          ? '<span class="co2-reduction-value">−' + totals.total_emissions_reduction_pct.toFixed(1) + '%</span>'
-          : '—';
-
-        var totalCells = '';
-        totalCells += '<td>Total Estimated CapEx</td>';
-        totalCells += '<td></td>';
-        if (isMF) {
-          totalCells += '<td class="align-right">' + (planPerUnit ? fmtCurrency(Math.round(planPerUnit)) + '/unit' : '—') + '</td>';
-        }
-        totalCells += '<td class="align-right">' + fmtCurrency(planTotal) + '</td>';
-        totalCells += '<td colspan="2"></td>';
-        totalCells += '<td class="align-right">' + totalEmRed + '</td>';
-        totalRow.innerHTML = totalCells;
-
-        /* Show/hide the $/unit column header */
-        var unitColHeader = document.getElementById('decarb-unit-col-header');
-        if (unitColHeader) {
-          unitColHeader.style.display = isMF ? '' : 'none';
-        }
+      /* Total card */
+      var totalCard = document.getElementById('capex-total-card');
+      if (totalCard) {
+        var totalEmRed = (totals.total_emissions_reduction_pct != null)
+          ? '<span class="co2-total">−' + totals.total_emissions_reduction_pct.toFixed(1) + '% CO₂</span>'
+          : '';
+        var puStr = (isMF && planPerUnit) ? '<span class="per-unit">' + fmtCurrency(Math.round(planPerUnit)) + '/unit</span>' : '';
+        totalCard.innerHTML =
+          '<span class="label">Total Estimated CapEx</span>' +
+          '<span class="amounts">' + totalEmRed + puStr +
+          '<span class="total-amount">' + fmtCurrency(planTotal) + '</span></span>';
       }
     }
+
+    /* ── Hidden table IDs for JS compatibility ── */
+    /* decarb-tbody, decarb-total-row, decarb-unit-col-header are hidden divs */
+    var tbody = document.getElementById('decarb-tbody');
+    var totalRow = document.getElementById('decarb-total-row');
+    var unitColHeader = document.getElementById('decarb-unit-col-header');
+    /* These are invisible — populate them silently for any external consumers */
+    if (tbody) tbody.innerHTML = '';
+    if (totalRow) totalRow.innerHTML = '';
+    if (unitColHeader) unitColHeader.style.display = isMF ? '' : 'none';
 
     /* ── Emissions Profile ── */
     setHtml('profile-fuel',      '<strong>' + safe(emiss.fuel_profile) + '</strong>');
@@ -1022,9 +914,9 @@
       var maxVal   = Math.max(propVal, benchVal, 1) * 1.25;
       var propPct  = (propVal  / maxVal * 100).toFixed(1);
       var benchPct = (benchVal / maxVal * 100).toFixed(1);
-      var propColor   = propVal > benchVal ? '#EF4444' : '#10B981';
-      var benchColor  = '#94A3B8';
-      var chartHtml   = '<div class="benchmark-chart">';
+      var propColor  = propVal > benchVal ? '#EF4444' : '#10B981';
+      var benchColor = '#94A3B8';
+      var chartHtml  = '<div class="benchmark-chart">';
       chartHtml += '<div class="benchmark-row">';
       chartHtml += '<div class="benchmark-label">This Property</div>';
       chartHtml += '<div class="benchmark-bar-track"><div class="benchmark-bar" style="width:' + propPct + '%;background:' + propColor + '"></div></div>';
@@ -1043,13 +935,16 @@
       chartContainer.style.display = '';
     }
 
-    /* ── Deal Signal ── */
+    /* ── Deal Signal box (hidden — signal is in hero) ── */
     var signalBox = document.getElementById('signal-box');
     if (signalBox && signal.level) {
       signalBox.className = 'signal-box ' + signalClass(signal.level);
-      signalBox.querySelector('.signal-icon').textContent = signalIcon(signal.level);
-      signalBox.querySelector('.signal-level-label').textContent = safe(signal.level);
-      signalBox.querySelector('.signal-narrative-text').textContent = safe(signal.narrative);
+      var iconEl = signalBox.querySelector('.signal-icon');
+      var labelEl = signalBox.querySelector('.signal-level-label');
+      var narEl = signalBox.querySelector('.signal-narrative-text');
+      if (iconEl) iconEl.textContent = signalIcon(signal.level);
+      if (labelEl) labelEl.textContent = safe(signal.level);
+      if (narEl) narEl.textContent = safe(signal.narrative);
     }
 
     /* ── Seller Questions ── */
@@ -1060,7 +955,10 @@
         if (qsList) {
           var qsHtml = '';
           qs.forEach(function(q, i) {
-            qsHtml += '<li><span class="seller-q-num">' + (i + 1) + '</span><span>' + safe(q) + '</span></li>';
+            qsHtml += '<li class="question-card">';
+            qsHtml += '<span class="seller-q-num">' + (i + 1) + '</span>';
+            qsHtml += '<span class="question-text">' + safe(q) + '</span>';
+            qsHtml += '</li>';
           });
           qsList.innerHTML = qsHtml;
         }
@@ -1113,22 +1011,18 @@
     var el = document.getElementById(id);
     if (el) el.textContent = val;
   }
-
   function setHtml(id, val) {
     var el = document.getElementById(id);
     if (el) el.innerHTML = val;
   }
-
   function showEl(id) {
     var el = document.getElementById(id);
     if (el) el.style.display = '';
   }
-
   function capitalise(s) {
     if (!s) return '';
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
-
   function fmtSqft(n) {
     if (typeof n !== 'number') return '—';
     return n.toLocaleString('en-US') + ' sqft';
@@ -1137,91 +1031,76 @@
 
 <span id="org-name-anchor" aria-hidden="true"></span>
 
-<!-- ══════════════════════════════════════
-     PAGE 1: COVER
-════════════════════════════════════════ -->
-<div class="page-cover">
+<!-- Hidden table stubs for JS compatibility -->
+<table style="display:none" aria-hidden="true">
+  <thead><tr><th id="decarb-unit-col-header"></th></tr></thead>
+  <tbody id="decarb-tbody"></tbody>
+  <tfoot><tr id="decarb-total-row"></tr></tfoot>
+</table>
 
-  <!-- Disposition banner — hidden by default, shown by JS -->
+<!-- Hidden signal-box for JS compatibility -->
+<div id="signal-box" class="signal-box signal-low" style="display:none" aria-hidden="true">
+  <div class="signal-box-header">
+    <div class="signal-icon">?</div>
+    <div class="signal-level-label">—</div>
+  </div>
+  <div class="signal-narrative-text">—</div>
+</div>
+
+<div class="report">
+
+  <!-- Disposition banner — hidden by default -->
   <div id="disposition-banner" class="disposition-banner" style="display:none">
     Sustainability Passport — Disposition / Exit
   </div>
 
-  <div class="cover-header">
-    <div class="report-label">Rapid Sustainability Risk Assessment</div>
-    <div class="cover-header-inner">
-      <h1 class="property-name" id="cover-property-name">Property Name</h1>
-      <div class="property-address" id="cover-property-address">Address</div>
-    </div>
-  </div>
+  <!-- ══════════════════════════════════
+       1. SIGNAL HERO
+  ════════════════════════════════════ -->
+  <div class="signal-hero" id="signal-hero-wrapper">
 
-  <div class="cover-body">
-
-    <!-- Property meta grid -->
-    <div class="cover-meta-grid">
-      <div class="cover-meta-item">
-        <div class="meta-label">Asset Type</div>
-        <div class="meta-value" id="cover-meta-type">—</div>
-      </div>
-      <div class="cover-meta-item">
-        <div class="meta-label">Size</div>
-        <div class="meta-value" id="cover-meta-units">—</div>
-      </div>
-      <div class="cover-meta-item">
-        <div class="meta-label">Year Built</div>
-        <div class="meta-value" id="cover-meta-built">—</div>
-      </div>
-      <div class="cover-meta-item">
-        <div class="meta-label">Prepared For</div>
-        <div class="meta-value" id="cover-meta-for">—</div>
-      </div>
-      <div class="cover-meta-item">
-        <div class="meta-label">Prepared By</div>
-        <div class="meta-value" id="cover-meta-by">—</div>
-      </div>
-      <div class="cover-meta-item">
-        <div class="meta-label">Report Date</div>
-        <div class="meta-value" id="cover-meta-date">—</div>
-      </div>
+    <!-- Top strip: dark, property identity -->
+    <div class="hero-top">
+      <span class="hero-property-name" id="cover-property-name">Property Name</span>
+      <span class="hero-address" id="cover-property-address">Address</span>
+      <span class="hero-date" id="cover-meta-date">—</span>
     </div>
 
-    <!-- Deal signal summary on cover -->
+    <!-- Main signal area: colored by signal class -->
     <div id="cover-signal-row" class="cover-signal-row signal-low">
       <span class="signal-badge">—</span>
       <span class="signal-narrative">—</span>
     </div>
 
-  </div>
-
-  <!-- Cover footer -->
-  <div class="cover-footer">
-    <div class="org-logo">
-      <div class="logo-mark">
-        <!-- Minimal inline wordmark; replaced by org logo at render time -->
-        <svg viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect x="0" y="0" width="6" height="6" rx="1"/>
-          <rect x="8" y="0" width="6" height="6" rx="1"/>
-          <rect x="0" y="8" width="6" height="6" rx="1"/>
-          <rect x="8" y="8" width="6" height="6" rx="1"/>
-        </svg>
+    <!-- Key metrics strip -->
+    <div class="hero-metrics">
+      <div class="hero-metric">
+        <div class="hero-metric-label">Asset Type</div>
+        <div class="hero-metric-value" id="cover-meta-type">—</div>
       </div>
-      <span class="org-name" id="cover-footer-org">Soapbox · Sustainability Intelligence</span>
+      <div class="hero-metric">
+        <div class="hero-metric-label">Size</div>
+        <div class="hero-metric-value" id="cover-meta-units">—</div>
+      </div>
+      <div class="hero-metric">
+        <div class="hero-metric-label">Year Built</div>
+        <div class="hero-metric-value" id="cover-meta-built">—</div>
+      </div>
+      <div class="hero-metric">
+        <div class="hero-metric-label">CapEx / Unit</div>
+        <div class="hero-metric-value" id="cover-meta-capex-unit">—</div>
+      </div>
     </div>
-    <div class="cover-footer-right">
-      <div class="confidential-label">Confidential</div>
-      <div class="report-date" id="cover-footer-date"></div>
-    </div>
-  </div>
 
-</div><!-- /page-cover -->
+  </div><!-- /signal-hero -->
 
+  <!-- Hidden meta fields (populated by JS for compatibility) -->
+  <span id="cover-meta-for" style="display:none"></span>
+  <span id="cover-meta-by" style="display:none"></span>
 
-<!-- ══════════════════════════════════════
-     PAGE 2+: CONTENT
-════════════════════════════════════════ -->
-<div class="page-content">
-
-  <!-- ── SECTION 1: DECARB PLAN ── -->
+  <!-- ══════════════════════════════════
+       2. CAPEX SECTION
+  ════════════════════════════════════ -->
   <div class="section">
     <div class="section-header">
       <div class="section-accent"></div>
@@ -1229,30 +1108,18 @@
       <span class="section-subtitle">Itemized measures for the capital model</span>
     </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th style="width:26%">Measure</th>
-          <th style="width:9%">Timing</th>
-          <th id="decarb-unit-col-header" class="align-right" style="width:8%">$/Unit</th>
-          <th class="align-right" style="width:7%">Total</th>
-          <th style="width:22%">Incentive Programs</th>
-          <th style="width:19%">Financial Impact</th>
-          <th class="align-right" style="width:9%">Est. CO₂ Reduction</th>
-        </tr>
-      </thead>
-      <tbody id="decarb-tbody">
-        <!-- Populated by JS -->
-      </tbody>
-      <tfoot>
-        <tr class="row-total" id="decarb-total-row">
-          <!-- Populated by JS -->
-        </tr>
-      </tfoot>
-    </table>
+    <div class="capex-list" id="capex-cards-list">
+      <!-- Populated by JS -->
+    </div>
+
+    <div class="capex-total-card" id="capex-total-card">
+      <!-- Populated by JS -->
+    </div>
   </div>
 
-  <!-- ── SECTION 2: ENERGY & EMISSIONS PROFILE ── -->
+  <!-- ══════════════════════════════════
+       3. EMISSIONS PROFILE
+  ════════════════════════════════════ -->
   <div class="section">
     <div class="section-header">
       <div class="section-accent"></div>
@@ -1260,52 +1127,33 @@
       <span class="section-subtitle">Carbon characterization &amp; regulatory exposure</span>
     </div>
 
-    <div class="profile-grid">
-      <div class="profile-row">
-        <div class="profile-key">Fuel Profile</div>
-        <div class="profile-value" id="profile-fuel">—</div>
-      </div>
-      <div class="profile-row">
-        <div class="profile-key">Utility Structure</div>
-        <div class="profile-value" id="profile-utility">—</div>
-      </div>
-      <div class="profile-row">
-        <div class="profile-key">Baseline Emissions</div>
-        <div class="profile-value" id="profile-emissions">—</div>
-      </div>
-      <!-- CRREM row hidden by default; shown by JS when data present -->
-      <div class="profile-row" id="profile-crrem-row" style="display:none">
-        <div class="profile-key">vs. CRREM Pathway</div>
-        <div class="profile-value" id="profile-crrem">—</div>
-      </div>
-      <div class="profile-row">
-        <div class="profile-key">Regulation</div>
-        <div class="profile-value" id="profile-regulation">—</div>
-      </div>
-    </div>
+    <div class="emissions-card">
+      <dl class="profile-dl">
+        <dt class="profile-dt">Fuel Profile</dt>
+        <dd class="profile-dd" id="profile-fuel">—</dd>
 
-    <!-- Benchmark chart — hidden until JS populates it -->
-    <div id="emissions-benchmark-chart" style="display:none; margin-top:20px;"></div>
-  </div>
+        <dt class="profile-dt">Utility Structure</dt>
+        <dd class="profile-dd" id="profile-utility">—</dd>
 
-  <!-- ── SECTION 3: DEAL SIGNAL ── -->
-  <div class="section">
-    <div class="section-header">
-      <div class="section-accent"></div>
-      <h2 class="section-title">Deal Signal</h2>
-      <span class="section-subtitle">Investment recommendation</span>
-    </div>
+        <dt class="profile-dt">Baseline Emissions</dt>
+        <dd class="profile-dd" id="profile-emissions">—</dd>
 
-    <div id="signal-box" class="signal-box signal-low">
-      <div class="signal-box-header">
-        <div class="signal-icon">?</div>
-        <div class="signal-level-label">—</div>
-      </div>
-      <div class="signal-narrative-text">—</div>
+        <!-- CRREM row hidden by default; shown by JS when data present -->
+        <dt class="profile-dt" id="profile-crrem-row" style="display:none">vs. CRREM Pathway</dt>
+        <dd class="profile-dd" id="profile-crrem" style="display:none">—</dd>
+
+        <dt class="profile-dt">Regulation</dt>
+        <dd class="profile-dd" id="profile-regulation">—</dd>
+      </dl>
+
+      <!-- Benchmark chart — hidden until JS populates it -->
+      <div id="emissions-benchmark-chart" style="display:none; margin-top:16px;"></div>
     </div>
   </div>
 
-  <!-- ── SECTION 4: SELLER QUESTIONS ── -->
+  <!-- ══════════════════════════════════
+       4. SELLER QUESTIONS
+  ════════════════════════════════════ -->
   <div id="seller-questions-section" class="section" style="display:none">
     <div class="section-header">
       <div class="section-accent"></div>
@@ -1313,29 +1161,31 @@
       <span class="section-subtitle">Items requiring verification before PSA</span>
     </div>
 
-    <ol class="seller-questions-list" id="seller-questions-list">
+    <ol class="questions-list" id="seller-questions-list">
       <!-- Populated by JS -->
     </ol>
   </div>
 
-  <!-- ── SECTION 5: SOURCES ── hidden until JS populates -->
-  <div id="sources-section" class="section sources-section" style="display:none">
-    <div class="section-header">
-      <div class="section-accent"></div>
-      <h2 class="section-title">Sources</h2>
-      <span class="section-subtitle">External data consulted in this assessment</span>
-    </div>
-    <ol class="sources-list" id="sources-list"></ol>
+  <!-- ══════════════════════════════════
+       5. SOURCES (collapsible)
+  ════════════════════════════════════ -->
+  <div id="sources-section" class="section" style="display:none">
+    <details>
+      <summary>Sources &amp; Citations</summary>
+      <div class="sources-inner">
+        <ol class="sources-list" id="sources-list"></ol>
+      </div>
+    </details>
   </div>
 
-  <!-- ── CONFIDENCE NOTE ── -->
+  <!-- ══════════════════════════════════
+       6. CONFIDENCE NOTE
+  ════════════════════════════════════ -->
   <div class="confidence-note" id="confidence-note">
     <strong>Data quality:</strong> —
   </div>
 
-</div><!-- /page-content -->
-
-
+</div><!-- /report -->
 
 </body>
 </html>
