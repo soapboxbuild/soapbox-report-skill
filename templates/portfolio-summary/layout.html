@@ -59,65 +59,6 @@
       --ver-unassured-bg: #F3F4F6;
       --ver-unassured-fg: #374151;
 
-      /* Layout */
-      --page-margin-top:    18mm;
-      --page-margin-side:   16mm;
-      --page-margin-bottom: 20mm;
-    }
-
-    /* ─────────────────────────────────────────────
-       PAGED.JS PAGE RULES
-    ───────────────────────────────────────────── */
-    @page {
-      size: letter;
-      margin: var(--page-margin-top) var(--page-margin-side) var(--page-margin-bottom);
-
-      @top-left  { content: ""; }
-      @top-right { content: ""; }
-      @bottom-left {
-        content: "";
-        font-family: var(--font-body);
-        font-size: 8pt;
-        color: var(--color-text-muted);
-      }
-      @bottom-center {
-        content: "Confidential — " string(orgName);
-        font-family: var(--font-body);
-        font-size: 8pt;
-        color: var(--color-text-muted);
-        text-align: center;
-      }
-      @bottom-right {
-        content: counter(page);
-        font-family: var(--font-body);
-        font-size: 8pt;
-        color: var(--color-text-muted);
-        text-align: right;
-      }
-    }
-
-    @page cover {
-      margin: 0;
-      @bottom-left   { content: none; }
-      @bottom-center { content: none; }
-      @bottom-right  { content: none; }
-    }
-
-    @page content {
-      @top-left {
-        content: string(portfolioName);
-        font-family: var(--font-body);
-        font-size: 8pt;
-        color: var(--color-text-muted);
-        padding-top: 4mm;
-      }
-      @top-right {
-        content: "Portfolio ESG Summary";
-        font-family: var(--font-body);
-        font-size: 8pt;
-        color: var(--color-text-muted);
-        padding-top: 4mm;
-      }
     }
 
     /* ─────────────────────────────────────────────
@@ -131,34 +72,34 @@
 
     html, body {
       font-family: var(--font-body);
-      font-size: 10pt;
+      font-size: 14px;
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 0 0 48px;
       color: var(--color-text);
       background: #fff;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
     }
 
     /* ─────────────────────────────────────────────
        COVER PAGE
     ───────────────────────────────────────────── */
     .page-cover {
-      page: cover;
-      break-after: page;
+      display: block;
       width: 100%;
-      min-height: 100vh;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
+      margin-bottom: 32px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.10);
     }
 
     /* Top dark band — institutional anchor */
     .cover-header {
       background: var(--color-primary);
       color: #fff;
-      padding: 22mm 18mm 16mm;
+      padding: 48px 40px 36px;
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      min-height: 76mm;
     }
 
     .cover-header .report-label {
@@ -167,7 +108,7 @@
       letter-spacing: 0.14em;
       text-transform: uppercase;
       color: var(--color-highlight);
-      margin-bottom: 5mm;
+      margin-bottom: 14px;
     }
 
     .cover-header .portfolio-name {
@@ -175,8 +116,7 @@
       font-weight: 700;
       line-height: 1.08;
       letter-spacing: -0.025em;
-      margin-bottom: 3mm;
-      string-set: portfolioName content();
+      margin-bottom: 8px;
     }
 
     .cover-header .fund-name {
@@ -201,7 +141,7 @@
     }
 
     .cover-stat {
-      padding: 5mm 6mm;
+      padding: 16px 20px;
       border-right: 1px solid rgba(255, 255, 255, 0.18);
     }
 
@@ -239,20 +179,20 @@
 
     /* Cover body — meta grid + prepared by block */
     .cover-body {
-      padding: 10mm 18mm 0;
+      padding: 24px 40px 0;
       background: #fff;
     }
 
     .cover-meta-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 5mm 8mm;
-      margin-bottom: 8mm;
+      gap: 12px 16px;
+      margin-bottom: 20px;
     }
 
     .cover-meta-item {
       border-top: 2px solid var(--color-highlight);
-      padding-top: 3mm;
+      padding-top: 8px;
     }
 
     .cover-meta-item .meta-label {
@@ -290,7 +230,7 @@
     }
 
     .cover-footer {
-      padding: 5mm 18mm 8mm;
+      padding: 16px 40px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -348,15 +288,14 @@
        CONTENT PAGES
     ───────────────────────────────────────────── */
     .page-content {
-      page: content;
+      padding: 0;
     }
 
     /* ─────────────────────────────────────────────
        SECTION STRUCTURE
     ───────────────────────────────────────────── */
     .section {
-      break-inside: avoid-page;
-      margin-bottom: 9mm;
+      margin-bottom: 28px;
     }
 
     .section-header {
@@ -364,7 +303,7 @@
       align-items: center;
       gap: 3mm;
       margin-bottom: 4mm;
-      padding-bottom: 2.5mm;
+      padding-bottom: 8px;
       border-bottom: 1.5px solid var(--color-border);
     }
 
@@ -406,7 +345,7 @@
       font-size: 8pt;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      padding: 3mm 4mm;
+      padding: 8px 12px;
       text-align: left;
     }
 
@@ -417,7 +356,7 @@
     tbody tr:nth-child(even) { background: #fff; }
 
     tbody td {
-      padding: 2.5mm 4mm;
+      padding: 8px 12px;
       vertical-align: middle;
       line-height: 1.4;
       border-bottom: 1px solid var(--color-border);
@@ -725,14 +664,6 @@
     .break-before { break-before: page; }
 
     /* ─────────────────────────────────────────────
-       NAMED STRING ANCHORS (Paged.js)
-    ───────────────────────────────────────────── */
-    #org-name-anchor {
-      string-set: orgName content();
-      display: none;
-    }
-
-    /* ─────────────────────────────────────────────
        UTILITY
     ───────────────────────────────────────────── */
     .sr-only {
@@ -819,12 +750,6 @@
   } else {
     populateReport();
   }
-
-  // Also register with Paged.js for print/PDF pagination (when CDN is available).
-  window.PagedConfig = {
-    auto: true,
-    before: function() { return populateReport(); }
-  };
 
   /* ─── Helpers ─── */
   function safe(val) {
@@ -1449,12 +1374,6 @@
 </div><!-- /page 5 gresb -->
 
 
-<!-- Paged.js — loaded LAST so PagedConfig.before fires first.
-     Pinned to 0.4.3; SRI hash verified against two independent fetches. -->
-<script
-  src="https://unpkg.com/pagedjs@0.4.3/dist/paged.polyfill.js"
-  integrity="sha384-JkjBt3FPbcQ3WBc3qp+maUIw8YLoZxNNj8H+tn73mljkC1ba8aEPWlgwfCRPpAxV"
-  crossorigin="anonymous"></script>
 
 </body>
 </html>

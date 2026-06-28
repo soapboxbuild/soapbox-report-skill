@@ -36,60 +36,6 @@
       --status-noncompliant-fg:  #991B1B;
       --status-noncompliant-border: #EF4444;
 
-      /* Layout */
-      --page-margin-top:    18mm;
-      --page-margin-side:   16mm;
-      --page-margin-bottom: 20mm;
-    }
-
-    /* ─────────────────────────────────────────────
-       PAGED.JS PAGE RULES
-    ───────────────────────────────────────────── */
-    @page {
-      size: letter;
-      margin: var(--page-margin-top) var(--page-margin-side) var(--page-margin-bottom);
-
-      @top-left   { content: ""; }
-      @top-right  { content: ""; }
-      @bottom-left { content: ""; }
-      @bottom-center {
-        content: "Confidential — " string(orgName);
-        font-family: var(--font-body);
-        font-size: 8pt;
-        color: var(--color-text-muted);
-        text-align: center;
-      }
-      @bottom-right {
-        content: counter(page);
-        font-family: var(--font-body);
-        font-size: 8pt;
-        color: var(--color-text-muted);
-        text-align: right;
-      }
-    }
-
-    @page cover {
-      margin: 0;
-      @bottom-left   { content: none; }
-      @bottom-center { content: none; }
-      @bottom-right  { content: none; }
-    }
-
-    @page content {
-      @top-left {
-        content: string(propertyName);
-        font-family: var(--font-body);
-        font-size: 8pt;
-        color: var(--color-text-muted);
-        padding-top: 4mm;
-      }
-      @top-right {
-        content: "BPS Compliance Analysis";
-        font-family: var(--font-body);
-        font-size: 8pt;
-        color: var(--color-text-muted);
-        padding-top: 4mm;
-      }
     }
 
     /* ─────────────────────────────────────────────
@@ -103,70 +49,33 @@
 
     html, body {
       font-family: var(--font-body);
-      font-size: 10pt;
+      font-size: 14px;
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 0 0 48px;
       color: var(--color-text);
       background: #fff;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-
-    /* ─────────────────────────────────────────────
-       SCREEN OVERRIDES — artifact viewer / browser
-       Print/Paged.js context keeps the mm layout.
-    ───────────────────────────────────────────── */
-    @media screen {
-      html, body { font-size: 13px; max-width: 900px; margin: 0 auto; }
-
-      /* Cover: no full-height, compact for scrolling */
-      .page-cover { min-height: unset; display: block; margin-bottom: 32px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-      .cover-header { padding: 32px 28px 24px; min-height: unset; }
-      .cover-header .property-name { font-size: 26px; }
-      .cover-header .property-address { font-size: 14px; }
-      .cover-header .report-label { margin-bottom: 12px; }
-      .cover-body { padding: 20px 28px 0; }
-      .cover-meta-grid { grid-template-columns: repeat(3, 1fr); gap: 12px 16px; margin-bottom: 16px; }
-      .cover-meta-item { border-top-width: 2px; padding-top: 8px; }
-      .cover-meta-item .meta-label { font-size: 9px; margin-bottom: 3px; }
-      .cover-meta-item .meta-value { font-size: 13px; }
-      .cover-signal-row { padding: 10px 14px; margin-bottom: 16px; }
-      .cover-footer { padding: 12px 28px 16px; }
-
-      /* Content: comfortable screen padding */
-      .page-content { padding: 0; }
-      .section { margin-bottom: 28px; }
-      .section-header { margin-bottom: 12px; padding-bottom: 8px; }
-      .section-title { font-size: 17px; }
-      thead th { padding: 8px 10px; }
-      tbody td { padding: 7px 10px; }
-      .profile-row .profile-key, .profile-row .profile-value { padding: 7px 10px; }
-      .signal-box { padding: 14px 18px; }
-      .signal-level-label { font-size: 15px; }
-      .signal-narrative-text { font-size: 13px; }
-      .confidence-note { margin-top: 24px; padding: 10px 14px; }
-      .seller-questions-list li { padding: 8px 0; font-size: 12px; }
-      .source-item { padding: 7px 0; }
     }
 
     /* ─────────────────────────────────────────────
        COVER PAGE
     ───────────────────────────────────────────── */
     .page-cover {
-      page: cover;
-      break-after: page;
+      display: block;
       width: 100%;
-      min-height: 100vh;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
+      margin-bottom: 32px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.10);
     }
 
     .cover-header {
       background: var(--color-primary);
       color: #fff;
-      padding: 22mm 18mm 18mm;
+      padding: 48px 40px 36px;
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      min-height: 72mm;
     }
 
     .cover-header .report-label {
@@ -175,7 +84,7 @@
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--color-highlight);
-      margin-bottom: 6mm;
+      margin-bottom: 16px;
     }
 
     .cover-header .property-name {
@@ -183,8 +92,7 @@
       font-weight: 700;
       line-height: 1.1;
       letter-spacing: -0.02em;
-      margin-bottom: 3mm;
-      string-set: propertyName content();
+      margin-bottom: 8px;
     }
 
     .cover-header .property-address {
@@ -203,11 +111,11 @@
 
     /* ── Compliance Status Badge — dominates the cover ── */
     .cover-body {
-      padding: 10mm 18mm 0;
+      padding: 24px 40px 0;
       background: #fff;
       display: flex;
       flex-direction: column;
-      gap: 7mm;
+      gap: 20px;
     }
 
     .compliance-badge {
@@ -278,12 +186,12 @@
     .cover-meta-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 5mm 8mm;
+      gap: 12px 16px;
     }
 
     .cover-meta-item {
       border-top: 2px solid var(--color-highlight);
-      padding-top: 3mm;
+      padding-top: 8px;
     }
 
     .cover-meta-item .meta-label {
@@ -303,7 +211,7 @@
 
     /* Cover footer */
     .cover-footer {
-      padding: 5mm 18mm 8mm;
+      padding: 16px 40px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -361,15 +269,14 @@
        CONTENT PAGES
     ───────────────────────────────────────────── */
     .page-content {
-      page: content;
+      padding: 0;
     }
 
     /* ─────────────────────────────────────────────
        SECTION STRUCTURE
     ───────────────────────────────────────────── */
     .section {
-      break-inside: avoid-page;
-      margin-bottom: 9mm;
+      margin-bottom: 28px;
     }
 
     .section-header {
@@ -377,7 +284,7 @@
       align-items: center;
       gap: 3mm;
       margin-bottom: 4mm;
-      padding-bottom: 2.5mm;
+      padding-bottom: 8px;
       border-bottom: 1.5px solid var(--color-border);
     }
 
@@ -419,7 +326,7 @@
       font-size: 8pt;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      padding: 3mm 4mm;
+      padding: 8px 12px;
       text-align: left;
     }
 
@@ -430,7 +337,7 @@
     tbody tr:nth-child(even) { background: #fff; }
 
     tbody td {
-      padding: 2.5mm 4mm;
+      padding: 8px 12px;
       vertical-align: top;
       line-height: 1.4;
       border-bottom: 1px solid var(--color-border);
@@ -497,7 +404,7 @@
 
     .profile-row .profile-key,
     .profile-row .profile-value {
-      padding: 2.5mm 4mm;
+      padding: 7px 12px;
       border-bottom: 1px solid var(--color-border);
       font-size: 9pt;
       line-height: 1.45;
@@ -667,14 +574,6 @@
     .break-before { break-before: page; }
 
     /* ─────────────────────────────────────────────
-       PAGED.JS NAMED STRING ANCHOR
-    ───────────────────────────────────────────── */
-    #org-name-anchor {
-      string-set: orgName content();
-      display: none;
-    }
-
-    /* ─────────────────────────────────────────────
        UTILITY
     ───────────────────────────────────────────── */
     .sr-only {
@@ -821,12 +720,6 @@
   } else {
     populateReport();
   }
-
-  // Also register with Paged.js for print/PDF pagination (when CDN is available).
-  window.PagedConfig = {
-    auto: true,
-    before: function() { return populateReport(); }
-  };
 
   function populateReport() {
     var dataEl = document.getElementById('report-data');
@@ -1130,7 +1023,6 @@
   }
 </script>
 
-<!-- Paged.js named string anchor -->
 <span id="org-name-anchor" aria-hidden="true"></span>
 
 
@@ -1367,11 +1259,6 @@
 </div><!-- /page-content: certifications -->
 
 
-<!-- Paged.js — loaded LAST so PagedConfig.before fires before pagination. -->
-<script
-  src="https://unpkg.com/pagedjs@0.4.3/dist/paged.polyfill.js"
-  integrity="sha384-JkjBt3FPbcQ3WBc3qp+maUIw8YLoZxNNj8H+tn73mljkC1ba8aEPWlgwfCRPpAxV"
-  crossorigin="anonymous"></script>
 
 </body>
 </html>
