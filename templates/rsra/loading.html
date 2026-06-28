@@ -1,0 +1,78 @@
+<!doctype html>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;background:#F8F9FB;color:#1A1A2E}
+  .report{max-width:780px;margin:0 auto;padding:40px 0 80px}
+  .doc-header{background:#12253A;color:#fff;padding:32px 40px 0}
+  .eyebrow{font-size:8px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:#4CAF82;margin-bottom:8px}
+  .prop-name{font-size:28px;font-weight:700;margin:8px 0 4px;line-height:1.2}
+  .prop-addr{font-size:13px;font-weight:300;color:rgba(255,255,255,.65);margin-bottom:24px}
+  .meta-strip{background:#1A3550;padding:8px 40px;display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.5)}
+  .meta-bar{display:flex;gap:32px;padding:14px 40px;background:#F1F4F8;border-top:1px solid #CBD5E1}
+  .meta-item{display:flex;flex-direction:column;gap:2px}
+  .meta-lbl{font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748B}
+  .shimmer{background:linear-gradient(90deg,#e2e8ef 25%,#f1f5f9 50%,#e2e8ef 75%);background-size:200% 100%;animation:sh 1.4s infinite;border-radius:3px;display:block}
+  @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .section{padding:32px 40px;background:#fff;margin-bottom:2px}
+  .sec-lbl{font-size:9px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:#1F6B45;margin-bottom:4px}
+  .sec-title{font-size:18px;font-weight:700;color:#12253A;border-bottom:1.5px solid #12253A;padding-bottom:8px;margin-bottom:16px}
+  .status{display:flex;align-items:center;gap:8px;margin-bottom:18px;font-size:12px;color:#64748B;font-weight:500}
+  .dot{width:6px;height:6px;border-radius:50%;background:#4CAF82;animation:pu 1.2s ease-in-out infinite;flex-shrink:0}
+  .dot:nth-child(2){animation-delay:.4s}.dot:nth-child(3){animation-delay:.8s}
+  @keyframes pu{0%,100%{opacity:.25}50%{opacity:1}}
+</style>
+<div class="report">
+  <div class="doc-header">
+    <div class="eyebrow">Rapid Sustainability Risk Assessment</div>
+    <div class="prop-name" id="pn">Property</div>
+    <div class="prop-addr" id="pa">Loading…</div>
+  </div>
+  <div class="meta-strip">
+    <span id="ps">Soapbox Sustainability Intelligence</span>
+    <span>CONFIDENTIAL</span>
+  </div>
+  <div class="meta-bar">
+    <div class="meta-item"><span class="meta-lbl">Asset Type</span><span class="shimmer" style="width:90px;height:14px;margin-top:3px"></span></div>
+    <div class="meta-item"><span class="meta-lbl">Size</span><span class="shimmer" style="width:70px;height:14px;margin-top:3px"></span></div>
+    <div class="meta-item"><span class="meta-lbl">Year Built</span><span class="shimmer" style="width:50px;height:14px;margin-top:3px"></span></div>
+    <div class="meta-item"><span class="meta-lbl">Est. Decarb CapEx / Unit</span><span class="shimmer" style="width:60px;height:14px;margin-top:3px"></span></div>
+  </div>
+  <div class="section">
+    <div class="sec-lbl">Assessment Signal</div>
+    <div class="status"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span id="st">Researching regulations and energy data…</span></div>
+    <span class="shimmer" style="width:55%;height:20px;margin-bottom:12px"></span>
+    <span class="shimmer" style="width:100%;height:12px;margin-bottom:7px"></span>
+    <span class="shimmer" style="width:85%;height:12px;margin-bottom:7px"></span>
+    <span class="shimmer" style="width:40%;height:12px"></span>
+  </div>
+  <div class="section">
+    <div class="sec-lbl">Capital Planning</div>
+    <div class="sec-title">Decarbonization Capital Plan</div>
+    <span class="shimmer" style="width:100%;height:38px;margin-bottom:2px"></span>
+    <span class="shimmer" style="width:100%;height:38px;margin-bottom:2px"></span>
+    <span class="shimmer" style="width:100%;height:38px;margin-bottom:2px"></span>
+    <span class="shimmer" style="width:100%;height:38px"></span>
+  </div>
+  <div class="section">
+    <div class="sec-lbl">Carbon Characterization</div>
+    <div class="sec-title">Energy &amp; Emissions Profile</div>
+    <span class="shimmer" style="width:100%;height:30px;margin-bottom:2px"></span>
+    <span class="shimmer" style="width:100%;height:30px;margin-bottom:2px"></span>
+    <span class="shimmer" style="width:100%;height:30px"></span>
+  </div>
+  <div class="section">
+    <div class="sec-lbl">Due Diligence</div>
+    <div class="sec-title">Seller Questions</div>
+    <span class="shimmer" style="width:100%;height:24px;margin-bottom:2px"></span>
+    <span class="shimmer" style="width:90%;height:24px"></span>
+  </div>
+</div>
+<script>
+  // Populated by the RSRA skill before emitting — replace placeholders
+  var n=document.getElementById('pn'),a=document.getElementById('pa'),s=document.getElementById('ps'),t=document.getElementById('st');
+  var params=new URLSearchParams(location.search);
+  if(params.get('name'))n.textContent=params.get('name');
+  if(params.get('addr'))a.textContent=params.get('addr');
+  if(params.get('org'))s.textContent=params.get('org')+' · Soapbox Sustainability Intelligence';
+  if(params.get('step'))t.textContent=params.get('step');
+</script>
