@@ -588,6 +588,36 @@
     }
 
     /* ─────────────────────────────────
+       SHARED TABLE — physical risk, GHG, SDG
+    ───────────────────────────────── */
+    .profile-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    .profile-table th {
+      background: #12253A;
+      color: #fff;
+      text-align: left;
+      padding: 8px 12px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .profile-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #E2E8F0;
+      vertical-align: top;
+      color: #334155;
+    }
+    .profile-table tr:nth-child(even) td { background: #F8F9FB; }
+    .risk-high { color: #B91C1C; font-weight: 600; }
+    .risk-moderate { color: #92400E; font-weight: 600; }
+    .risk-low { color: #065F46; font-weight: 600; }
+
+    /* ─────────────────────────────────
        6. SOURCES (collapsible)
     ───────────────────────────────── */
     #sources-section details {
@@ -795,6 +825,63 @@
     "Please provide the last 24 months of utility bills for gas and common area electric — we need actual consumption to verify benchmark emissions estimates before PSA.",
     "Has the City of Portland issued any preliminary guidance or notices related to the expected 2027–2028 Building Performance Standards rulemaking that references this property or address?",
     "What is the current status of the central gas boiler — age, last service, any documented deferred maintenance? (Relevant to Yr3 HPWH replacement sizing.)"
+  ],
+  "physical_climate_risk": {
+    "hazards": [
+      {"hazard": "Riverine / coastal flood", "risk_level": "Low", "finding": "FEMA Zone X — minimal flood risk"},
+      {"hazard": "Extreme heat", "risk_level": "Moderate", "finding": "8 additional days >95°F by 2050 (NOAA)"},
+      {"hazard": "Wildfire", "risk_level": "Low", "finding": "Not applicable — Pacific NW urban"},
+      {"hazard": "Hurricane / wind", "risk_level": "Low", "finding": "Not applicable"},
+      {"hazard": "Drought / water stress", "risk_level": "Moderate", "finding": "WRI Aqueduct Medium-High — Portland metro growth"},
+      {"hazard": "Seismic", "risk_level": "High", "finding": "USGS Zone D — Cascadia subduction zone; standard Portland exposure"}
+    ],
+    "insurance_note": "Seismic exposure is standard for Portland market; no insurer withdrawal concerns. Premium increases from heat stress are likely moderate over a 5-year hold."
+  },
+  "ghg_scoping": {
+    "scopes": [
+      {"scope": "Scope 1", "source": "Natural gas — heat + DHW", "annual_tco2e": "~42", "notes": "Verified from OM utility schedule"},
+      {"scope": "Scope 2 (location)", "source": "Grid electricity — landlord common area", "annual_tco2e": "~18", "notes": "eGRID NWPP: 0.18 lbs CO₂/kWh"},
+      {"scope": "Scope 3", "source": "Resident electricity (submetered out)", "annual_tco2e": "~310", "notes": "Leased-space boundary — excluded from owner total"},
+      {"scope": "Total (owner boundary)", "source": "Scope 1 + 2", "annual_tco2e": "~60", "notes": "~2.6 kgCO₂e/SF/yr | ~68 kgCO₂e/m²/yr"}
+    ],
+    "offset_note": "Annual REC offset cost for full owner boundary (60 tCO₂e): ~155 RECs × $6/REC = ~$930/yr. Full building including residents: ~960 RECs = ~$5,760/yr."
+  },
+  "water_efficiency": {
+    "wui": "30.4 gal/SF/yr (12-mo actuals from seller)",
+    "vs_benchmark": "Efficient — Stoneweg portfolio assets at this WUI typically achieve Water Score >75",
+    "water_stress": "Medium-High (WRI Aqueduct) — Portland metro growth outpacing supply in dry years",
+    "sasb_disclosure": "Yes — SASB Real Estate standard requires identification of assets in water stress areas",
+    "submeters": "Unit-level water submeters installed — enables RUBS billing and ESPM benchmarking"
+  },
+  "quality_of_life": {
+    "walk_score": "72 / 100 — Very Walkable",
+    "bike_score": "88 / 100 — Biker's Paradise",
+    "transit_score": "61 / 100 — Excellent Transit",
+    "google_rating": "4.4 / 5 stars (38 reviews)",
+    "ora_ranking": "79 / 100"
+  },
+  "affordability": {
+    "avg_rent": "$1,680/mo (proforma average across unit mix)",
+    "income_required": "$67,200/yr (40x rule at 30% rent burden threshold)",
+    "tract_mfi": "$94,500 (2022 FFIEC census tract estimate)",
+    "gap": "$27,300 surplus — rents affordable to residents earning well below MFI",
+    "tract_income_level": "Middle",
+    "underserved": "No",
+    "minority_pct": "28.4%",
+    "agency_mission": "Possible — proforma rents serve ~70% AMI demographic; confirm unit mix against Fannie Mae AMI thresholds at origination"
+  },
+  "certifications_and_debt": {
+    "energy_star_recommendation": "Pursue — Audette estimates likely score ~78; Freddie Mac loan term is 10 years (Green Advantage eligible). Cost: ~$8K one-time. Annual recertification required.",
+    "leed_recommendation": "Not recommended — fund does not report to GRESB and no lender mandate; no meaningful exit premium expected in this submarket.",
+    "green_debt": "Freddie Mac Green Advantage eligible (10-yr term) — requires documenting ≥25% energy or water savings from planned measures. HPWH + solar + smart controls likely qualify.",
+    "fund_alignment": "This acquisition improves the fund portfolio's sustainability profile — all-electric primary fuel, efficient water use, and planned ENERGY STAR certification align with Better Climate Challenge 50% reduction commitment."
+  },
+  "sdg_alignment": [
+    {"sdg": "SDG 7 — Clean Energy", "alignment": "Primarily electric; solar array planned (Yr2); seeking renewable PPA"},
+    {"sdg": "SDG 9 — Infrastructure", "alignment": "Energy efficiency improvements modeled; CO₂ intensity ~40% below local median"},
+    {"sdg": "SDG 11 — Sustainable Cities", "alignment": "Walk Score 72, Transit Score 61; workforce housing pricing (~70% AMI)"},
+    {"sdg": "SDG 12 — Responsible Consumption", "alignment": "Recycling program in place; WasteX enrollment planned post-acquisition"},
+    {"sdg": "SDG 13 — Climate Action", "alignment": "ESPM benchmarking from Day 1; GHG reduction plan aligned with BCC 50% target"}
   ],
   "data_quality": "Medium — confirmed fuel profile; CapEx benchmarked",
   "prepared_by": "Soapbox Sustainability Intelligence",
@@ -1067,6 +1154,149 @@
       if (narEl) narEl.textContent = safe(signal.narrative);
     }
 
+    /* ── Physical Climate Risk ── */
+    var physRisk = data.physical_climate_risk || {};
+    var physSection = document.getElementById('physical-risk-section');
+    if (physSection && physRisk.hazards && physRisk.hazards.length > 0) {
+      var physTbody = document.querySelector('#physical-risk-table tbody');
+      var riskHtml = '';
+      physRisk.hazards.forEach(function(h) {
+        var lvl = (h.risk_level || '').toLowerCase();
+        var cls = lvl.indexOf('high') !== -1 ? 'risk-high' : lvl.indexOf('mod') !== -1 ? 'risk-moderate' : 'risk-low';
+        riskHtml += '<tr><td>' + safe(h.hazard) + '</td>';
+        riskHtml += '<td class="' + cls + '">' + safe(h.risk_level) + '</td>';
+        riskHtml += '<td>' + safe(h.finding) + '</td></tr>';
+      });
+      if (physTbody) physTbody.innerHTML = riskHtml;
+      if (physRisk.insurance_note) {
+        var pNote = document.getElementById('physical-risk-note');
+        if (pNote) pNote.textContent = physRisk.insurance_note;
+      }
+      physSection.style.display = '';
+    }
+
+    /* ── GHG Scoping ── */
+    var ghg = data.ghg_scoping || {};
+    var ghgSection = document.getElementById('ghg-section');
+    if (ghgSection && ghg.scopes && ghg.scopes.length > 0) {
+      var ghgTbody = document.querySelector('#ghg-table tbody');
+      var ghgHtml = '';
+      ghg.scopes.forEach(function(s) {
+        ghgHtml += '<tr><td>' + safe(s.scope) + '</td><td>' + safe(s.source) + '</td>';
+        ghgHtml += '<td>' + safe(s.annual_tco2e) + '</td><td>' + safe(s.notes) + '</td></tr>';
+      });
+      if (ghgTbody) ghgTbody.innerHTML = ghgHtml;
+      if (ghg.offset_note) {
+        var ghgNote = document.getElementById('ghg-offset-note');
+        if (ghgNote) ghgNote.textContent = ghg.offset_note;
+      }
+      ghgSection.style.display = '';
+    }
+
+    /* ── Water Efficiency ── */
+    var water = data.water_efficiency || {};
+    var waterSection = document.getElementById('water-section');
+    if (waterSection && Object.keys(water).length > 0) {
+      var waterDl = document.getElementById('water-dl');
+      var wFields = [
+        ['Water Use Intensity', water.wui],
+        ['vs. Portfolio Benchmark', water.vs_benchmark],
+        ['Water Stress (WRI)', water.water_stress],
+        ['SASB Disclosure Required', water.sasb_disclosure],
+        ['Unit Water Submeters', water.submeters]
+      ];
+      var wHtml = '';
+      wFields.forEach(function(f) {
+        if (f[1]) {
+          wHtml += '<div class="profile-row"><dt class="profile-dt">' + f[0] + '</dt>';
+          wHtml += '<dd class="profile-dd">' + safe(f[1]) + '</dd></div>';
+        }
+      });
+      if (waterDl && wHtml) { waterDl.innerHTML = wHtml; waterSection.style.display = ''; }
+    }
+
+    /* ── Quality of Life ── */
+    var qol = data.quality_of_life || {};
+    var qolSection = document.getElementById('qol-section');
+    if (qolSection && Object.keys(qol).length > 0) {
+      var qolDl = document.getElementById('qol-dl');
+      var qFields = [
+        ['Walk Score®', qol.walk_score],
+        ['Bike Score®', qol.bike_score],
+        ['Transit Score®', qol.transit_score],
+        ['Google Rating', qol.google_rating],
+        ['ORA Power Ranking', qol.ora_ranking]
+      ];
+      var qHtml = '';
+      qFields.forEach(function(f) {
+        if (f[1]) {
+          qHtml += '<div class="profile-row"><dt class="profile-dt">' + f[0] + '</dt>';
+          qHtml += '<dd class="profile-dd">' + safe(f[1]) + '</dd></div>';
+        }
+      });
+      if (qolDl && qHtml) { qolDl.innerHTML = qHtml; qolSection.style.display = ''; }
+    }
+
+    /* ── Affordability ── */
+    var afford = data.affordability || {};
+    var affordSection = document.getElementById('afford-section');
+    if (affordSection && Object.keys(afford).length > 0) {
+      var affordDl = document.getElementById('afford-dl');
+      var aFields = [
+        ['Avg Proforma Rent', afford.avg_rent],
+        ['Income Required (40x Rule)', afford.income_required],
+        ['Census Tract MFI', afford.tract_mfi],
+        ['Affordability Gap', afford.gap],
+        ['Tract Income Level', afford.tract_income_level],
+        ['Underserved / Distressed Tract', afford.underserved],
+        ['Tract Minority %', afford.minority_pct],
+        ['Agency Mission Eligibility', afford.agency_mission]
+      ];
+      var aHtml = '';
+      aFields.forEach(function(f) {
+        if (f[1]) {
+          aHtml += '<div class="profile-row"><dt class="profile-dt">' + f[0] + '</dt>';
+          aHtml += '<dd class="profile-dd">' + safe(f[1]) + '</dd></div>';
+        }
+      });
+      if (affordDl && aHtml) { affordDl.innerHTML = aHtml; affordSection.style.display = ''; }
+    }
+
+    /* ── Certifications & Green Debt ── */
+    var cert = data.certifications_and_debt || {};
+    var certSection = document.getElementById('cert-section');
+    if (certSection && Object.keys(cert).length > 0) {
+      var certDl = document.getElementById('cert-dl');
+      var cFields = [
+        ['ENERGY STAR Recommendation', cert.energy_star_recommendation],
+        ['LEED Recommendation', cert.leed_recommendation],
+        ['Green Debt Assessment', cert.green_debt],
+        ['Fund / LP ESG Alignment', cert.fund_alignment]
+      ];
+      var cHtml = '';
+      cFields.forEach(function(f) {
+        if (f[1]) {
+          cHtml += '<div class="profile-row"><dt class="profile-dt">' + f[0] + '</dt>';
+          cHtml += '<dd class="profile-dd">' + safe(f[1]) + '</dd></div>';
+        }
+      });
+      if (certDl && cHtml) { certDl.innerHTML = cHtml; certSection.style.display = ''; }
+    }
+
+    /* ── UN SDG Alignment ── */
+    var sdgs = data.sdg_alignment || [];
+    var sdgSection = document.getElementById('sdg-section');
+    if (sdgSection && sdgs.length > 0) {
+      var sdgTbody = document.querySelector('#sdg-table tbody');
+      var sdgHtml = '';
+      sdgs.forEach(function(s) {
+        sdgHtml += '<tr><td style="font-weight:600;white-space:nowrap">' + safe(s.sdg) + '</td>';
+        sdgHtml += '<td>' + safe(s.alignment) + '</td></tr>';
+      });
+      if (sdgTbody) sdgTbody.innerHTML = sdgHtml;
+      sdgSection.style.display = '';
+    }
+
     /* ── Seller Questions ── */
     var sellerSection = document.getElementById('seller-questions-section');
     if (sellerSection) {
@@ -1293,7 +1523,81 @@
   </div>
 
   <!-- ══════════════════════════════════
-       4. SELLER QUESTIONS
+       4. PHYSICAL CLIMATE RISK
+  ════════════════════════════════════ -->
+  <div id="physical-risk-section" class="section" style="display:none">
+    <div class="section-label">Physical Climate Risk</div>
+    <h2 class="section-title">Climate Hazard Exposure</h2>
+    <table class="profile-table" id="physical-risk-table">
+      <thead><tr><th>Hazard</th><th>Risk Level</th><th>Key Finding</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div id="physical-risk-note" style="margin-top:12px;font-size:12px;color:#475569;line-height:1.6"></div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       5. GHG SCOPING
+  ════════════════════════════════════ -->
+  <div id="ghg-section" class="section" style="display:none">
+    <div class="section-label">Carbon Characterization</div>
+    <h2 class="section-title">GHG Scoping — Scope 1 / 2 / 3</h2>
+    <table class="profile-table" id="ghg-table">
+      <thead><tr><th>Scope</th><th>Source</th><th>Annual tCO₂e</th><th>Notes</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div id="ghg-offset-note" style="margin-top:12px;font-size:12px;color:#475569;line-height:1.6"></div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       6. WATER EFFICIENCY
+  ════════════════════════════════════ -->
+  <div id="water-section" class="section" style="display:none">
+    <div class="section-label">Water Performance</div>
+    <h2 class="section-title">Water Efficiency &amp; Water Risk</h2>
+    <dl class="profile-dl" id="water-dl"></dl>
+  </div>
+
+  <!-- ══════════════════════════════════
+       7. QUALITY OF LIFE
+  ════════════════════════════════════ -->
+  <div id="qol-section" class="section" style="display:none">
+    <div class="section-label">Quality of Life</div>
+    <h2 class="section-title">Livability &amp; Reputation</h2>
+    <dl class="profile-dl" id="qol-dl"></dl>
+  </div>
+
+  <!-- ══════════════════════════════════
+       8. AFFORDABILITY
+  ════════════════════════════════════ -->
+  <div id="afford-section" class="section" style="display:none">
+    <div class="section-label">Social Impact</div>
+    <h2 class="section-title">Affordability Analysis</h2>
+    <dl class="profile-dl" id="afford-dl"></dl>
+  </div>
+
+  <!-- ══════════════════════════════════
+       9. CERTIFICATIONS & GREEN DEBT
+  ════════════════════════════════════ -->
+  <div id="cert-section" class="section" style="display:none">
+    <div class="section-label">Certifications &amp; Financing</div>
+    <h2 class="section-title">Certifications, Green Debt &amp; Fund Alignment</h2>
+    <dl class="profile-dl" id="cert-dl"></dl>
+  </div>
+
+  <!-- ══════════════════════════════════
+       10. UN SDG ALIGNMENT
+  ════════════════════════════════════ -->
+  <div id="sdg-section" class="section" style="display:none">
+    <div class="section-label">ESG Reporting</div>
+    <h2 class="section-title">UN SDG Alignment</h2>
+    <table class="profile-table" id="sdg-table">
+      <thead><tr><th>SDG</th><th>Property Alignment</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════
+       11. SELLER QUESTIONS
   ════════════════════════════════════ -->
   <div id="seller-questions-section" class="section" style="display:none">
     <div class="section-label">Due Diligence</div>
