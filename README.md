@@ -1,3 +1,7 @@
+> **DEPRECATED** — This repo's Paged.js pipeline and templates are no longer used.
+> Live report skills are in [`soapbox-agent/skills/`](../soapbox-agent/skills/).
+> This repo is kept for git history only.
+
 # Soapbox Report
 
 Centralized, consulting-grade reporting for the Soapbox platform. Every other Soapbox plugin dispatches the `report-renderer` subagent with a typed JSON payload to produce paginated, branded reports — reviewed interactively in Claude's artifact pane, then exported to PDF, PowerPoint, or Excel.
